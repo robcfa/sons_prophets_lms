@@ -132,10 +132,10 @@ const LearnerDashboard = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-text-secondary font-body">Loading your dashboard...</p>
+          <div className="loading-spinner mx-auto mb-4"></div>
+          <p className="text-secondary font-body">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -148,25 +148,25 @@ const LearnerDashboard = () => {
         <meta name="description" content="Your personalized learning dashboard for Old Testament prophecy education" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-page" data-theme="sons-prophets-light">
         <GlobalHeader />
         <PrimaryNavigation />
         <BreadcrumbTrail />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Section */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-gold2">
+            <div className="flex items-center justify-between mb-gold">
               <div>
-                <h1 className="text-3xl font-heading font-heading-bold text-text-primary">
+                <h1 className="text-3xl font-heading font-heading-bold text-primary">
                   {getGreeting()}, {user.name}!
                 </h1>
-                <p className="text-text-secondary font-body mt-1">
+                <p className="text-secondary font-body mt-small">
                   Ready to continue your theological journey?
                 </p>
               </div>
               
-              <div className="hidden md:flex items-center space-x-4 text-sm font-caption text-text-muted">
+              <div className="hidden md:flex items-center space-x-4 text-sm font-caption text-tertiary">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-success rounded-full"></div>
                   <span>Online</span>
@@ -185,7 +185,7 @@ const LearnerDashboard = () => {
             </div>
 
             {/* XP Card */}
-            <div className="mb-8">
+            <div className="mb-gold2">
               <XPCard
                 currentXP={user.currentXP}
                 nextLevelXP={user.nextLevelXP}
@@ -196,54 +196,64 @@ const LearnerDashboard = () => {
           </div>
 
           {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-gold2">
             {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-gold2">
               {/* Quick Actions */}
-              <QuickActions />
+              <div className="dashboard-section">
+                <QuickActions />
+              </div>
 
               {/* Course Progress */}
-              <CourseProgressWidget courses={mockCourses} />
+              <div className="dashboard-section">
+                <CourseProgressWidget courses={mockCourses} />
+              </div>
 
               {/* Community Activity Feed */}
-              <CommunityActivityFeed />
+              <div className="dashboard-section">
+                <CommunityActivityFeed />
+              </div>
             </div>
 
             {/* Right Column - Sidebar */}
-            <div className="space-y-8">
+            <div className="space-y-gold2">
               {/* Upcoming Events */}
-              <UpcomingEventsWidget />
+              <div className="dashboard-section">
+                <UpcomingEventsWidget />
+              </div>
 
               {/* Recent Achievements */}
-              <RecentAchievements achievements={mockAchievements} />
+              <div className="dashboard-section">
+                <RecentAchievements achievements={mockAchievements} />
+              </div>
 
               {/* Study Stats Card */}
-              <div className="bg-card rounded-xl shadow-soft-md border border-subtle p-6">
-                <h3 className="text-lg font-heading font-heading-semibold text-text-primary mb-4">
+              <div className="card-themed">
+                <h3 className="text-lg font-heading font-heading-semibold text-primary mb-gold">
                   Study Statistics
                 </h3>
                 
-                <div className="space-y-4">
+                <div className="space-y-gold">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-body text-text-secondary">Total Study Time</span>
-                    <span className="text-sm font-data font-bold text-text-primary">47h 32m</span>
+                    <span className="text-sm font-body text-secondary">Total Study Time</span>
+                    <span className="text-sm font-data font-bold text-primary">47h 32m</span>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-body text-text-secondary">Courses Completed</span>
-                    <span className="text-sm font-data font-bold text-text-primary">
+                    <span className="text-sm font-body text-secondary">Courses Completed</span>
+                    <span className="text-sm font-data font-bold text-primary">
                       {user.completedCourses}/{user.totalCourses}
                     </span>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-body text-text-secondary">Forum Posts</span>
-                    <span className="text-sm font-data font-bold text-text-primary">23</span>
+                    <span className="text-sm font-body text-secondary">Forum Posts</span>
+                    <span className="text-sm font-data font-bold text-primary">23</span>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-body text-text-secondary">Badges Earned</span>
-                    <span className="text-sm font-data font-bold text-text-primary">{user.badges.length}</span>
+                    <span className="text-sm font-body text-secondary">Badges Earned</span>
+                    <span className="text-sm font-data font-bold text-primary">{user.badges.length}</span>
                   </div>
                 </div>
               </div>

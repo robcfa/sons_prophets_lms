@@ -1,0 +1,171 @@
+/* Golden ratio spacing system */
+/* Golden ratio = 1 : φ (≈1.618). Base unit = 1rem. */
+:root {
+  --sp-base: 1rem;
+  --sp-gold: calc(var(--sp-base) * 1.618);     /* ≈1.618rem */
+  --sp-gold2: calc(var(--sp-gold) * 1.618);   /* ≈2.618rem */
+  --sp-gold3: calc(var(--sp-gold2) * 1.618);  /* ≈4.236rem */
+  --sp-small: calc(var(--sp-base) * 0.618);   /* ≈0.618rem */
+  --sp-tiny: calc(var(--sp-small) * 0.618);   /* ≈0.382rem */
+}
+
+/* Section wrapper with golden ratio spacing */
+section {
+  margin-top: var(--sp-gold2);
+  margin-bottom: var(--sp-gold2);
+  padding: var(--sp-gold) var(--sp-base);
+}
+
+/* Dashboard-specific layouts */
+.dashboard-section {
+  margin-bottom: var(--sp-gold2);
+  padding: var(--sp-gold);
+}
+
+/* Recent Badges grid */
+.recent-badges {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--sp-gold);
+  padding: var(--sp-gold);
+}
+
+@media (min-width: 640px) {
+  .recent-badges {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .recent-badges {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Upcoming Events with golden ratio spacing */
+.upcoming-events {
+  padding: var(--sp-gold);
+}
+
+.upcoming-events > * + * {
+  margin-top: var(--sp-gold);
+}
+
+/* Quick Actions Grid */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--sp-gold);
+  padding: var(--sp-gold);
+}
+
+@media (min-width: 640px) {
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .quick-actions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Consistent card styling with golden ratio */
+.card, .badge, .event-card {
+  padding: var(--sp-base);
+  border-radius: var(--rounded-box, 0.5rem);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-card);
+}
+
+.card-compact {
+  padding: var(--sp-small);
+}
+
+.card-large {
+  padding: var(--sp-gold);
+}
+
+/* Golden ratio typography spacing */
+.typography-flow > * + * {
+  margin-top: var(--sp-gold);
+}
+
+.typography-flow h1 + *,
+.typography-flow h2 + *,
+.typography-flow h3 + * {
+  margin-top: var(--sp-small);
+}
+
+/* Utility classes for golden ratio spacing */
+.space-y-gold > * + * {
+  margin-top: var(--sp-gold);
+}
+
+.space-y-gold2 > * + * {
+  margin-top: var(--sp-gold2);
+}
+
+.space-y-small > * + * {
+  margin-top: var(--sp-small);
+}
+
+.gap-gold {
+  gap: var(--sp-gold);
+}
+
+.gap-gold2 {
+  gap: var(--sp-gold2);
+}
+
+.gap-small {
+  gap: var(--sp-small);
+}
+
+.p-gold {
+  padding: var(--sp-gold);
+}
+
+.p-gold2 {
+  padding: var(--sp-gold2);
+}
+
+.p-small {
+  padding: var(--sp-small);
+}
+
+.mt-gold {
+  margin-top: var(--sp-gold);
+}
+
+.mt-gold2 {
+  margin-top: var(--sp-gold2);
+}
+
+.mb-gold {
+  margin-bottom: var(--sp-gold);
+}
+
+.mb-gold2 {
+  margin-bottom: var(--sp-gold2);
+}
+
+/* Responsive spacing adjustments */
+@media (min-width: 768px) {
+  .dashboard-section {
+    padding: var(--sp-gold2);
+  }
+  
+  .recent-badges,
+  .upcoming-events,
+  .quick-actions {
+    padding: var(--sp-gold2);
+  }
+}
+
+@media (min-width: 1024px) {
+  section {
+    padding: var(--sp-gold2) var(--sp-gold);
+  }
+}
