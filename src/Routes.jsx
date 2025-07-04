@@ -14,6 +14,7 @@ import EventsCalendar from "pages/events-calendar";
 import AdminContentManagement from "pages/admin-content-management";
 import CoachDashboard from "pages/coach-dashboard";
 import HuddlePage from "pages/huddle";
+import RecordingUploadPage from "pages/meeting-recording-upload";
 import NotFound from "pages/NotFound";
 
 const Routes = () => {
@@ -33,6 +34,7 @@ const Routes = () => {
         <Route path="/community-forum" element={<CommunityForum />} />
         <Route path="/events-calendar" element={<EventsCalendar />} />
         <Route path="/huddle" element={<HuddlePage />} />
+        <Route path="/meeting/:id/upload-recording" element={<RecordingUploadPage />} />
         <Route path="/admin-content-management" element={<AdminContentManagement />} />
         <Route path="/coach-dashboard" element={<CoachDashboard />} />
         <Route path="*" element={<NotFound />} />
