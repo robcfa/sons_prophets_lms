@@ -195,6 +195,56 @@ const EventsCalendar = () => {
       ],
       isRecurring: true,
       duration: 90
+    },
+    {
+      id: 7,
+      title: "Team Huddle: Upcoming Outreach",
+      description: `Discuss logistics and pray for the upcoming community outreach event.`,
+      date: "2024-12-23",
+      time: "10:00",
+      endTime: "11:00",
+      location: "Conference Room B",
+      address: "123 Faith Street, Jerusalem, Israel",
+      type: "huddle",
+      instructor: {
+        id: 2,
+        name: "Pastor Michael Johnson",
+        title: "Senior Pastor",
+        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
+      },
+      attendees: 12,
+      maxAttendees: 20,
+      userRSVP: null,
+      image: "https://images.unsplash.com/photo-1551732342-147f0e7d2c57?w=600&h=300&fit=crop",
+      prerequisites: [],
+      materials: ["Agenda"],
+      isRecurring: false,
+      duration: 60
+    },
+    {
+      id: 8,
+      title: "Webinar: Prophecy in the Modern Church",
+      description: `Join our online webinar discussing how prophetic gifts operate today.`,
+      date: "2024-12-26",
+      time: "15:00",
+      endTime: "16:30",
+      location: "Online",
+      address: "",
+      type: "webinar",
+      instructor: {
+        id: 3,
+        name: "Elder Rebecca Davis",
+        title: "Prayer Ministry Leader",
+        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
+      },
+      attendees: 50,
+      maxAttendees: 100,
+      userRSVP: null,
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=300&fit=crop",
+      prerequisites: [],
+      materials: [],
+      isRecurring: false,
+      duration: 90
     }
   ];
 
@@ -208,13 +258,13 @@ const EventsCalendar = () => {
     {
       id: 2,
       name: "Pastor Michael Johnson",
-      eventCount: 1,
+      eventCount: 2,
       specialization: "Pastoral Ministry"
     },
     {
       id: 3,
       name: "Elder Rebecca Davis",
-      eventCount: 1,
+      eventCount: 2,
       specialization: "Prayer Ministry"
     },
     {
@@ -342,7 +392,9 @@ const EventsCalendar = () => {
       studyGroup: events.filter(e => e.type === 'study-group').length,
       prayerMeeting: events.filter(e => e.type === 'prayer-meeting').length,
       specialService: events.filter(e => e.type === 'special-service').length,
-      workshop: events.filter(e => e.type === 'workshop').length
+      workshop: events.filter(e => e.type === 'workshop').length,
+      huddle: events.filter(e => e.type === 'huddle').length,
+      webinar: events.filter(e => e.type === 'webinar').length
     };
     return counts;
   };

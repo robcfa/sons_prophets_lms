@@ -12,14 +12,18 @@ const GlobalHeader = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Simulate user authentication check
-    const mockUser = {
-      name: 'John Doe',
-      role: 'learner', // learner, coach, admin
-      avatar: '/assets/images/avatar-placeholder.png',
-      email: 'john.doe@example.com'
-    };
-    setUser(mockUser);
+    const role = localStorage.getItem('userRole');
+    const email = localStorage.getItem('userEmail');
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
+    if (isAuthenticated && role && email) {
+      setUser({
+        name: email.split('@')[0],
+        role,
+        avatar: '/assets/images/avatar-placeholder.png',
+        email
+      });
+    }
 
     // Simulate notifications
     const mockNotifications = [
@@ -66,7 +70,9 @@ const GlobalHeader = () => {
   };
 
   const handleLogout = () => {
-    // Handle logout logic
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('isAuthenticated');
     setUser(null);
     setShowProfileMenu(false);
   };

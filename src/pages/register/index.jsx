@@ -146,7 +146,6 @@ const Register = () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Mock registration success
-      console.log('Registration data:', formData);
       setRegistrationComplete(true);
       
     } catch (error) {

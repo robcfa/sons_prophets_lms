@@ -27,7 +27,9 @@ const EventModal = ({ event, isOpen, onClose, onRSVP }) => {
       'study-group': 'bg-secondary text-secondary-foreground',
       'prayer-meeting': 'bg-accent text-accent-foreground',
       'special-service': 'bg-warning text-warning-foreground',
-      'workshop': 'bg-success text-success-foreground'
+      'workshop': 'bg-success text-success-foreground',
+      'huddle': 'bg-primary text-primary-foreground',
+      'webinar': 'bg-secondary text-secondary-foreground'
     };
     return colors[type] || 'bg-text-muted text-white';
   };
@@ -38,7 +40,9 @@ const EventModal = ({ event, isOpen, onClose, onRSVP }) => {
       'study-group': 'Study Group',
       'prayer-meeting': 'Prayer Meeting',
       'special-service': 'Special Service',
-      'workshop': 'Workshop'
+      'workshop': 'Workshop',
+      'huddle': 'Huddle',
+      'webinar': 'Webinar'
     };
     return labels[type] || 'Event';
   };
@@ -84,7 +88,7 @@ const EventModal = ({ event, isOpen, onClose, onRSVP }) => {
       try {
         await navigator.share(shareData);
       } catch (error) {
-        console.log('Share cancelled');
+        // Share cancelled
       }
     } else {
       // Fallback to clipboard

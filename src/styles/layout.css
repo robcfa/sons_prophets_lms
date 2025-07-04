@@ -1,0 +1,57 @@
+/* 1. Spacing scale */
+:root {
+  --sp-04: 0.25rem;  /* 4px  */
+  --sp-08: 0.5rem;   /* 8px  */
+  --sp-16: 1rem;     /* 16px */
+  --sp-24: 1.5rem;   /* 24px */
+  --sp-32: 2rem;     /* 32px */
+}
+
+/* 2. Reset any global margin/padding */
+body, h1, h2, h3, h4, p {
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. Header (nav) spacing */
+header {
+  padding: var(--sp-16) var(--sp-32);
+}
+
+/* 4. Main content padding */
+main {
+  padding: 0 var(--sp-32);
+}
+
+/* 5. Section spacing & headings */
+main > section {
+  margin-top: var(--sp-32);
+}
+main h1, main h2 {
+  margin-bottom: var(--sp-16);
+}
+
+/* 6. Card-style containers */
+.card,
+.badge-container,
+.event-card,
+.quick-action-card {
+  background: var(--tw-bg-card, white);
+  border-radius: 0.5rem;
+  padding: var(--sp-16);
+  margin-bottom: var(--sp-24);
+}
+
+/* 7. “Quick Actions” grid */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-24);
+  margin-top: var(--sp-32);
+}
+
+/* 8. Fine-tune first section margin */
+main > section:first-child {
+  margin-top: var(--sp-24);
+}
+

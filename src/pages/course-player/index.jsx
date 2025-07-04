@@ -208,7 +208,6 @@ const CoursePlayer = () => {
     }
     
     // No more lessons - course complete
-    console.log('Course completed!');
   };
 
   const handlePrevLesson = () => {
@@ -380,3 +379,4 @@ const CoursePlayer = () => {
 };
 
 export default CoursePlayer;
+
