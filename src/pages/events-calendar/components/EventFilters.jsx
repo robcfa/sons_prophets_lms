@@ -16,7 +16,9 @@ const EventFilters = ({
     { value: 'study-group', label: 'Study Groups', icon: 'Users', count: eventCounts.studyGroup },
     { value: 'prayer-meeting', label: 'Prayer Meetings', icon: 'Heart', count: eventCounts.prayerMeeting },
     { value: 'special-service', label: 'Special Services', icon: 'Star', count: eventCounts.specialService },
-    { value: 'workshop', label: 'Workshops', icon: 'Wrench', count: eventCounts.workshop }
+    { value: 'workshop', label: 'Workshops', icon: 'Wrench', count: eventCounts.workshop },
+    { value: 'huddle', label: 'Huddles', icon: 'Mic', count: eventCounts.huddle },
+    { value: 'webinar', label: 'Webinars', icon: 'Video', count: eventCounts.webinar }
   ];
 
   return (

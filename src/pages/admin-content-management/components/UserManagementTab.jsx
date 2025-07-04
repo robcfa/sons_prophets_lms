@@ -110,7 +110,6 @@ const UserManagementTab = () => {
   };
 
   const handleBulkAction = (action) => {
-    console.log(`Bulk action: ${action} on users:`, selectedUsers);
     setSelectedUsers([]);
     setShowBulkActions(false);
   };

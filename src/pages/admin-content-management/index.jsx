@@ -61,7 +61,6 @@ const AdminContentManagement = () => {
   ];
 
   const handleAIWizardComplete = (courseData) => {
-    console.log('AI Wizard completed with data:', courseData);
     // Handle course creation logic here
   };
 

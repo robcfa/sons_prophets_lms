@@ -98,7 +98,6 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
   };
 
   const handleBulkAction = (action) => {
-    console.log(`Bulk action: ${action} on courses:`, selectedCourses);
     setSelectedCourses([]);
     setShowBulkActions(false);
   };
