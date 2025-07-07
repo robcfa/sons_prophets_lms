@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import { safeArray, safeLength, safeProp } from '../../../utils/safeObjectUtils';
 
-const LessonContent = ({ lesson, onLessonComplete, onNextLesson, onPrevLesson }) => {
+const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLesson }) => {
   const [videoProgress, setVideoProgress] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [showTranscript, setShowTranscript] = useState(false);
@@ -22,23 +23,27 @@ const LessonContent = ({ lesson, onLessonComplete, onNextLesson, onPrevLesson })
 
   const handleVideoProgress = (e) => {
     const video = e.target;
-    const progress = (video.currentTime / video.duration) * 100;
-    setVideoProgress(progress);
+    if (video?.duration) {
+      const progress = (video.currentTime / video.duration) * 100;
+      setVideoProgress(progress);
+    }
   };
 
   const handleVideoEnd = () => {
-    onLessonComplete(lesson.id);
+    if (lesson?.id && onLessonComplete) {
+      onLessonComplete(lesson.id);
+    }
   };
 
   const handlePlaybackSpeedChange = (speed) => {
     setPlaybackSpeed(speed);
-    if (videoRef.current) {
+    if (videoRef?.current) {
       videoRef.current.playbackRate = speed;
     }
   };
 
   const handleBookmark = () => {
-    if (videoRef.current) {
+    if (videoRef?.current && lesson?.id) {
       const currentTime = videoRef.current.currentTime;
       const newBookmark = {
         id: Date.now(),
@@ -60,13 +65,14 @@ const LessonContent = ({ lesson, onLessonComplete, onNextLesson, onPrevLesson })
   const handleQuizSubmit = () => {
     setQuizSubmitted(true);
     // Calculate score and provide feedback
-    const correctAnswers = lesson.questions?.filter(q => 
-      quizAnswers[q.id] === q.correctAnswer
-    ).length || 0;
-    const totalQuestions = lesson.questions?.length || 0;
-    const score = Math.round((correctAnswers / totalQuestions) * 100);
+    const questions = safeArray(lesson?.questions);
+    const correctAnswers = questions.filter(q => 
+      quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')
+    ).length;
+    const totalQuestions = safeLength(questions);
+    const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
     
-    if (score >= 70) {
+    if (score >= 70 && lesson?.id && onLessonComplete) {
       onLessonComplete(lesson.id);
     }
   };
@@ -290,153 +296,165 @@ const LessonContent = ({ lesson, onLessonComplete, onNextLesson, onPrevLesson })
     </div>
   );
 
-  const renderQuizLesson = () => (
-    <div className="space-y-6">
-      <div className="bg-surface rounded-lg p-6">
-        <h2 className="font-heading font-heading-semibold text-text-primary text-xl mb-2">
-          {lesson.title}
-        </h2>
-        <p className="text-text-secondary font-body mb-6">
-          Test your understanding of the lesson material. You need 70% or higher to pass.
-        </p>
+  const renderQuizLesson = () => {
+    const questions = safeArray(lesson?.questions);
+    
+    return (
+      <div className="space-y-6">
+        <div className="bg-surface rounded-lg p-6">
+          <h2 className="font-heading font-heading-semibold text-text-primary text-xl mb-2">
+            {safeProp(lesson, 'title', 'Quiz')}
+          </h2>
+          <p className="text-text-secondary font-body mb-6">
+            Test your understanding of the lesson material. You need 70% or higher to pass.
+          </p>
 
-        {lesson.questions?.map((question, index) => (
-          <div key={question.id} className="mb-8 p-4 bg-background rounded-lg">
-            <h3 className="font-body font-body-semibold text-text-primary mb-4">
-              {index + 1}. {question.question}
-            </h3>
+          {questions.map((question, index) => {
+            const questionId = safeProp(question, 'id');
+            const questionText = safeProp(question, 'question', '');
+            const questionType = safeProp(question, 'type', '');
+            const options = safeArray(question?.options);
+            
+            return (
+              <div key={questionId || index} className="mb-8 p-4 bg-background rounded-lg">
+                <h3 className="font-body font-body-semibold text-text-primary mb-4">
+                  {index + 1}. {questionText}
+                </h3>
 
-            {question.type === 'multiple-choice' && (
-              <div className="space-y-2">
-                {question.options?.map((option, optionIndex) => (
-                  <label
-                    key={optionIndex}
-                    className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color"
-                  >
-                    <input
-                      type="radio"
-                      name={`question-${question.id}`}
-                      value={option}
-                      checked={quizAnswers[question.id] === option}
-                      onChange={(e) => handleQuizAnswer(question.id, e.target.value)}
-                      disabled={quizSubmitted}
-                      className="text-primary focus:ring-primary"
-                    />
-                    <span className="text-text-primary font-body">{option}</span>
-                  </label>
-                ))}
-              </div>
-            )}
+                {questionType === 'multiple-choice' && (
+                  <div className="space-y-2">
+                    {options.map((option, optionIndex) => (
+                      <label
+                        key={optionIndex}
+                        className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color"
+                      >
+                        <input
+                          type="radio"
+                          name={`question-${questionId}`}
+                          value={option}
+                          checked={quizAnswers[questionId] === option}
+                          onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
+                          disabled={quizSubmitted}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-text-primary font-body">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
 
-            {question.type === 'true-false' && (
-              <div className="space-y-2">
-                {['True', 'False'].map((option) => (
-                  <label
-                    key={option}
-                    className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color"
-                  >
-                    <input
-                      type="radio"
-                      name={`question-${question.id}`}
-                      value={option}
-                      checked={quizAnswers[question.id] === option}
-                      onChange={(e) => handleQuizAnswer(question.id, e.target.value)}
-                      disabled={quizSubmitted}
-                      className="text-primary focus:ring-primary"
-                    />
-                    <span className="text-text-primary font-body">{option}</span>
-                  </label>
-                ))}
-              </div>
-            )}
+                {questionType === 'true-false' && (
+                  <div className="space-y-2">
+                    {['True', 'False'].map((option) => (
+                      <label
+                        key={option}
+                        className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color"
+                      >
+                        <input
+                          type="radio"
+                          name={`question-${questionId}`}
+                          value={option}
+                          checked={quizAnswers[questionId] === option}
+                          onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
+                          disabled={quizSubmitted}
+                          className="text-primary focus:ring-primary"
+                        />
+                        <span className="text-text-primary font-body">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
 
-            {question.type === 'short-answer' && (
-              <Input
-                type="text"
-                placeholder="Enter your answer..."
-                value={quizAnswers[question.id] || ''}
-                onChange={(e) => handleQuizAnswer(question.id, e.target.value)}
-                disabled={quizSubmitted}
-                className="w-full"
-              />
-            )}
-
-            {/* Show feedback after submission */}
-            {quizSubmitted && (
-              <div className={`mt-4 p-3 rounded-lg ${
-                quizAnswers[question.id] === question.correctAnswer
-                  ? 'bg-success-50 border border-success-200' :'bg-error-50 border border-error-200'
-              }`}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Icon 
-                    name={quizAnswers[question.id] === question.correctAnswer ? "CheckCircle" : "XCircle"} 
-                    size={16} 
-                    className={quizAnswers[question.id] === question.correctAnswer ? "text-success" : "text-error"} 
+                {questionType === 'short-answer' && (
+                  <Input
+                    type="text"
+                    placeholder="Enter your answer..."
+                    value={quizAnswers[questionId] || ''}
+                    onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
+                    disabled={quizSubmitted}
+                    className="w-full"
                   />
-                  <span className={`text-sm font-body font-body-semibold ${
-                    quizAnswers[question.id] === question.correctAnswer ? "text-success" : "text-error"
+                )}
+
+                {/* Show feedback after submission */}
+                {quizSubmitted && (
+                  <div className={`mt-4 p-3 rounded-lg ${
+                    quizAnswers[questionId] === safeProp(question, 'correctAnswer')
+                      ? 'bg-success-50 border border-success-200' :'bg-error-50 border border-error-200'
                   }`}>
-                    {quizAnswers[question.id] === question.correctAnswer ? "Correct!" : "Incorrect"}
-                  </span>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Icon 
+                        name={quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "CheckCircle" : "XCircle"} 
+                        size={16} 
+                        className={quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "text-success" : "text-error"} 
+                      />
+                      <span className={`text-sm font-body font-body-semibold ${
+                        quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "text-success" : "text-error"
+                      }`}>
+                        {quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "Correct!" : "Incorrect"}
+                      </span>
+                    </div>
+                    {safeProp(question, 'explanation') && (
+                      <p className="text-sm text-text-secondary font-body">
+                        {safeProp(question, 'explanation')}
+                      </p>
+                    )}
+                    {quizAnswers[questionId] !== safeProp(question, 'correctAnswer') && (
+                      <p className="text-sm text-text-secondary font-body mt-1">
+                        Correct answer: {safeProp(question, 'correctAnswer')}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Submit Button */}
+          {!quizSubmitted && (
+            <div className="flex justify-center">
+              <Button
+                variant="primary"
+                onClick={handleQuizSubmit}
+                disabled={Object.keys(quizAnswers).length < safeLength(questions)}
+                className="px-8"
+              >
+                Submit Quiz
+              </Button>
+            </div>
+          )}
+
+          {/* Results */}
+          {quizSubmitted && (
+            <div className="bg-primary-50 rounded-lg p-4 text-center">
+              <h3 className="font-heading font-heading-semibold text-primary text-lg mb-2">
+                Quiz Results
+              </h3>
+              <p className="text-text-primary font-body mb-4">
+                You scored {Math.round((questions.filter(q => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length / Math.max(safeLength(questions), 1)) * 100)}% 
+                ({questions.filter(q => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length} out of {safeLength(questions)} correct)
+              </p>
+              {((questions.filter(q => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length / Math.max(safeLength(questions), 1)) * 100) >= 70 ? (
+                <div className="flex items-center justify-center space-x-2 text-success">
+                  <Icon name="CheckCircle" size={20} />
+                  <span className="font-body font-body-semibold">Passed! Lesson completed.</span>
                 </div>
-                {question.explanation && (
-                  <p className="text-sm text-text-secondary font-body">
-                    {question.explanation}
-                  </p>
-                )}
-                {quizAnswers[question.id] !== question.correctAnswer && (
-                  <p className="text-sm text-text-secondary font-body mt-1">
-                    Correct answer: {question.correctAnswer}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
-
-        {/* Submit Button */}
-        {!quizSubmitted && (
-          <div className="flex justify-center">
-            <Button
-              variant="primary"
-              onClick={handleQuizSubmit}
-              disabled={Object.keys(quizAnswers).length < (lesson.questions?.length || 0)}
-              className="px-8"
-            >
-              Submit Quiz
-            </Button>
-          </div>
-        )}
-
-        {/* Results */}
-        {quizSubmitted && (
-          <div className="bg-primary-50 rounded-lg p-4 text-center">
-            <h3 className="font-heading font-heading-semibold text-primary text-lg mb-2">
-              Quiz Results
-            </h3>
-            <p className="text-text-primary font-body mb-4">
-              You scored {Math.round(((lesson.questions?.filter(q => quizAnswers[q.id] === q.correctAnswer).length || 0) / (lesson.questions?.length || 1)) * 100)}% 
-              ({lesson.questions?.filter(q => quizAnswers[q.id] === q.correctAnswer).length || 0} out of {lesson.questions?.length || 0} correct)
-            </p>
-            {((lesson.questions?.filter(q => quizAnswers[q.id] === q.correctAnswer).length || 0) / (lesson.questions?.length || 1)) * 100 >= 70 ? (
-              <div className="flex items-center justify-center space-x-2 text-success">
-                <Icon name="CheckCircle" size={20} />
-                <span className="font-body font-body-semibold">Passed! Lesson completed.</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center space-x-2 text-error">
-                <Icon name="XCircle" size={20} />
-                <span className="font-body font-body-semibold">You need 70% to pass. Please review and try again.</span>
-              </div>
-            )}
-          </div>
-        )}
+              ) : (
+                <div className="flex items-center justify-center space-x-2 text-error">
+                  <Icon name="XCircle" size={20} />
+                  <span className="font-body font-body-semibold">You need 70% to pass. Please review and try again.</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderLessonContent = () => {
-    switch (lesson?.type) {
+    const lessonType = safeProp(lesson, 'type');
+    switch (lessonType) {
       case 'video':
         return renderVideoLesson();
       case 'text':
@@ -449,7 +467,7 @@ const LessonContent = ({ lesson, onLessonComplete, onNextLesson, onPrevLesson })
             <div className="text-center">
               <Icon name="AlertCircle" size={48} className="text-text-muted mx-auto mb-4" />
               <p className="text-text-secondary font-body">
-                Unknown lesson type: {lesson?.type}
+                Unknown lesson type: {lessonType || 'none'}
               </p>
             </div>
           </div>
@@ -457,7 +475,7 @@ const LessonContent = ({ lesson, onLessonComplete, onNextLesson, onPrevLesson })
     }
   };
 
-  if (!lesson) {
+  if (!lesson || !safeProp(lesson, 'id')) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -477,25 +495,25 @@ const LessonContent = ({ lesson, onLessonComplete, onNextLesson, onPrevLesson })
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-2">
-              <Icon name={lesson.type === 'video' ? 'Play' : lesson.type === 'quiz' ? 'HelpCircle' : 'FileText'} size={20} className="text-primary" />
+              <Icon name={safeProp(lesson, 'type') === 'video' ? 'Play' : safeProp(lesson, 'type') === 'quiz' ? 'HelpCircle' : 'FileText'} size={20} className="text-primary" />
               <span className="text-sm font-caption text-text-secondary capitalize">
-                {lesson.type} Lesson
+                {safeProp(lesson, 'type', 'Unknown')} Lesson
               </span>
-              {lesson.duration && (
+              {safeProp(lesson, 'duration') && (
                 <>
                   <span className="text-text-muted">•</span>
                   <span className="text-sm font-caption text-text-secondary">
-                    {lesson.duration}
+                    {safeProp(lesson, 'duration')}
                   </span>
                 </>
               )}
             </div>
             <h1 className="font-heading font-heading-semibold text-text-primary text-2xl">
-              {lesson.title}
+              {safeProp(lesson, 'title', 'Untitled Lesson')}
             </h1>
-            {lesson.description && (
+            {safeProp(lesson, 'description') && (
               <p className="text-text-secondary font-body mt-2">
-                {lesson.description}
+                {safeProp(lesson, 'description')}
               </p>
             )}
           </div>

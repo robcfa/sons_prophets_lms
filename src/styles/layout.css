@@ -24,22 +24,8 @@ section {
 
 /* Recent Badges grid */
 .recent-badges {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: var(--sp-gold);
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gold;
   padding: var(--sp-gold);
-}
-
-@media (min-width: 640px) {
-  .recent-badges {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .recent-badges {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
 
 /* Upcoming Events with golden ratio spacing */
@@ -53,22 +39,8 @@ section {
 
 /* Quick Actions Grid */
 .quick-actions {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: var(--sp-gold);
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-gold;
   padding: var(--sp-gold);
-}
-
-@media (min-width: 640px) {
-  .quick-actions {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 768px) {
-  .quick-actions {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 /* Consistent card styling with golden ratio */
@@ -167,5 +139,241 @@ section {
 @media (min-width: 1024px) {
   section {
     padding: var(--sp-gold2) var(--sp-gold);
+  }
+}
+
+/* Layout grid system with golden ratio */
+.layout-grid {
+  display: grid;
+  gap: var(--sp-gold);
+}
+
+.layout-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.layout-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.layout-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 768px) {
+  .layout-grid-2,
+  .layout-grid-3,
+  .layout-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Flexbox utilities with golden ratio */
+.flex-gold {
+  display: flex;
+  gap: var(--sp-gold);
+}
+
+.flex-gold2 {
+  display: flex;
+  gap: var(--sp-gold2);
+}
+
+.flex-small {
+  display: flex;
+  gap: var(--sp-small);
+}
+
+/* Container with golden ratio max-width */
+.container-golden {
+  max-width: calc(100vw / 1.618);
+  margin: 0 auto;
+  padding: 0 var(--sp-base);
+}
+
+/* Sidebar and main content with golden ratio */
+.layout-sidebar {
+  display: grid;
+  grid-template-columns: var(--sp-gold3) 1fr;
+  gap: var(--sp-gold);
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .layout-sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Navigation spacing */
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-small);
+}
+
+.nav-list-horizontal {
+  display: flex;
+  gap: var(--sp-gold);
+}
+
+@media (max-width: 640px) {
+  .nav-list-horizontal {
+    flex-direction: column;
+    gap: var(--sp-small);
+  }
+}
+
+/* Form spacing with golden ratio */
+.form-group {
+  margin-bottom: var(--sp-gold);
+}
+
+.form-group-compact {
+  margin-bottom: var(--sp-small);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--sp-base);
+  margin-top: var(--sp-gold);
+}
+
+/* Button spacing */
+.button-group {
+  display: flex;
+  gap: var(--sp-base);
+}
+
+.button-group-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-small);
+}
+
+/* Alert and notification spacing */
+.alert {
+  margin-bottom: var(--sp-gold);
+  padding: var(--sp-base);
+}
+
+.notification {
+  margin-bottom: var(--sp-base);
+  padding: var(--sp-small);
+}
+
+/* Table spacing */
+.table-container {
+  margin: var(--sp-gold) 0;
+}
+
+.table-row {
+  padding: var(--sp-small) 0;
+}
+
+.table-cell {
+  padding: var(--sp-small);
+}
+
+/* Modal and dialog spacing */
+.modal-content {
+  padding: var(--sp-gold);
+}
+
+.modal-header {
+  margin-bottom: var(--sp-gold);
+}
+
+.modal-footer {
+  margin-top: var(--sp-gold);
+}
+
+/* Responsive design with golden ratio breakpoints */
+@media (min-width: 480px) {
+  .responsive-gold {
+    padding: var(--sp-gold);
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-gold {
+    padding: var(--sp-gold2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-gold {
+    padding: var(--sp-gold3);
+  }
+}
+
+/* Utility for element spacing */
+.element-spacing > * + * {
+  margin-top: var(--sp-base);
+}
+
+.element-spacing-gold > * + * {
+  margin-top: var(--sp-gold);
+}
+
+.element-spacing-small > * + * {
+  margin-top: var(--sp-small);
+}
+
+/* Print styles with golden ratio */
+@media print {
+  section {
+    margin-top: var(--sp-base);
+    margin-bottom: var(--sp-base);
+    padding: var(--sp-small);
+  }
+  
+  .dashboard-section {
+    padding: var(--sp-base);
+  }
+  
+  .recent-badges,
+  .upcoming-events,
+  .quick-actions {
+    padding: var(--sp-base);
+  }
+}
+
+/* Accessibility improvements */
+.focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  padding: var(--sp-small);
+  text-decoration: none;
+  border-radius: var(--rounded-box, 0.5rem);
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  .card, .badge, .event-card {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useAuth } from '../../contexts/AuthContext';
 import { getUserPlan } from '../../utils/planUtils';
+import { safeGet } from '../../utils/safeObjectUtils';
 import MobileNav from '../../components/Layout/MobileNav';
 import Sidebar from '../../components/Layout/Sidebar';
 import GlobalHeader from '../../components/ui/GlobalHeader';
@@ -22,7 +23,7 @@ const LearnerDashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    // Update time every minute
+    // Update time every minute with cleanup
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
@@ -30,7 +31,7 @@ const LearnerDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Mock data for components
+  // Enhanced mock data with proper defaults
   const mockCourses = [
     {
       id: 1,
@@ -107,22 +108,33 @@ const LearnerDashboard = () => {
   ];
 
   const getGreeting = () => {
-    const hour = currentTime.getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    try {
+      const hour = currentTime?.getHours() || 12;
+      if (hour < 12) return 'Good morning';
+      if (hour < 17) return 'Good afternoon';
+      return 'Good evening';
+    } catch (error) {
+      console.warn('Error getting greeting:', error);
+      return 'Hello';
+    }
   };
 
+  // Enhanced loading state with error boundary
   if (!user) {
     return (
-      <div className="min-h-screen bg-page flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="loading-spinner mx-auto mb-4"></div>
-          <p className="text-secondary font-body">Loading your dashboard...</p>
+          <p className="text-text-secondary font-body">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
+
+  // Safe access to user properties with defaults
+  const displayName = safeGet(userProfile, 'full_name') || 
+                      safeGet(user, 'email') || 
+                      'User';
 
   return (
     <>
@@ -131,7 +143,7 @@ const LearnerDashboard = () => {
         <meta name="description" content="Your personalized learning dashboard for Old Testament prophecy education" />
       </Helmet>
 
-      <div className="min-h-screen bg-page" data-theme="sons-prophets-light">
+      <div className="min-h-screen bg-background" data-theme="sons-prophets-light">
         <MobileNav plan={userPlan} />
         <div className="flex">
           <Sidebar plan={userPlan} />
@@ -142,38 +154,38 @@ const LearnerDashboard = () => {
             <BreadcrumbTrail />
 
             <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-              {/* Welcome Section */}
-              <div className="mb-gold2">
-                <div className="flex items-center justify-between mb-gold">
+              {/* Welcome Section with safe property access */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h1 className="text-3xl font-heading font-heading-bold text-primary">
-                      {getGreeting()}, {userProfile?.full_name || user?.email || 'User'}!
+                    <h1 className="text-3xl font-heading font-bold text-primary">
+                      {getGreeting()}, {displayName}!
                     </h1>
-                    <p className="text-secondary font-body mt-small">
+                    <p className="text-text-secondary font-body mt-2">
                       Ready to continue your theological journey?
                     </p>
                   </div>
                   
-                  <div className="hidden md:flex items-center space-x-4 text-sm font-caption text-tertiary">
+                  <div className="hidden md:flex items-center space-x-4 text-sm font-caption text-text-muted">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-success rounded-full"></div>
                       <span>Online</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span>Plan: {userPlan}</span>
+                      <span>Plan: {userPlan || 'Free'}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span>{currentTime.toLocaleDateString('en-US', { 
+                      <span>{currentTime?.toLocaleDateString('en-US', { 
                         weekday: 'long', 
                         month: 'long', 
                         day: 'numeric' 
-                      })}</span>
+                      }) || 'Today'}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* XP Card */}
-                <div className="mb-gold2">
+                {/* XP Card with error boundary */}
+                <div className="mb-8">
                   <XPCard
                     currentXP={1250}
                     nextLevelXP={2000}
@@ -257,7 +269,7 @@ const LearnerDashboard = () => {
           </div>
         </div>
 
-        {/* AI Assistant Chat */}
+        {/* AI Assistant Chat with safe props */}
         <AIAssistantChat
           isExpanded={isAIExpanded}
           onToggle={() => setIsAIExpanded(!isAIExpanded)}

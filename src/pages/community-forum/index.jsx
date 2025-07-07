@@ -259,15 +259,18 @@ const CommunityForum = () => {
   };
 
   const filterAndSortThreads = () => {
-    let filtered = threads;
+    let filtered = threads || [];
 
-    // Filter by category
+    // Filter by category with safe access
     if (activeCategory !== 'all') {
-      filtered = filtered.filter(thread => safeGet(thread, 'category') === activeCategory);
+      filtered = filtered.filter(thread => {
+        const threadCategory = safeGet(thread, 'category', '');
+        return threadCategory === activeCategory;
+      });
     }
 
-    // Filter by search query
-    if (searchQuery.trim()) {
+    // Filter by search query with safe access
+    if (searchQuery?.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(thread => {
         const title = safeGet(thread, 'title', '').toLowerCase();
@@ -284,13 +287,16 @@ const CommunityForum = () => {
       });
     }
 
-    // Sort threads
+    // Sort threads with safe property access
     switch (sortBy) {
       case 'recent':
         filtered.sort((a, b) => {
-          const dateA = safeGet(a, 'lastActivity') ? new Date(a.lastActivity) : new Date(0);
-          const dateB = safeGet(b, 'lastActivity') ? new Date(b.lastActivity) : new Date(0);
-          return dateB - dateA;
+          const dateA = safeGet(a, 'lastActivity');
+          const dateB = safeGet(b, 'lastActivity');
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+          return new Date(dateB) - new Date(dateA);
         });
         break;
       case 'popular':
@@ -302,9 +308,12 @@ const CommunityForum = () => {
         break;
       case 'newest':
         filtered.sort((a, b) => {
-          const dateA = safeGet(a, 'createdAt') ? new Date(a.createdAt) : new Date(0);
-          const dateB = safeGet(b, 'createdAt') ? new Date(b.createdAt) : new Date(0);
-          return dateB - dateA;
+          const dateA = safeGet(a, 'createdAt');
+          const dateB = safeGet(b, 'createdAt');
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+          return new Date(dateB) - new Date(dateA);
         });
         break;
       default:
@@ -316,11 +325,13 @@ const CommunityForum = () => {
 
   const getThreadCounts = () => {
     const counts = {};
-    categories.forEach(category => {
-      if (category.id === 'all') {
-        counts[category.id] = threads.length;
+    (categories || []).forEach(category => {
+      if (category?.id === 'all') {
+        counts[category.id] = (threads || []).length;
       } else {
-        counts[category.id] = threads.filter(thread => safeGet(thread, 'category') === category.id).length;
+        counts[category.id] = (threads || []).filter(thread => 
+          safeGet(thread, 'category') === category?.id
+        ).length;
       }
     });
     return counts;

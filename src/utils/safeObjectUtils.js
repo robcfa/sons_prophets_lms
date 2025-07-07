@@ -1,87 +1,88 @@
-// Safe object utility functions to prevent Object.entries() errors
-
-/**
- * Safely get object entries, returning empty array if object is null/undefined
- * @param {Object} obj - The object to get entries from
- * @returns {Array} Array of [key, value] pairs or empty array
- */
-export const safeObjectEntries = (obj) => {
-  if (!obj || typeof obj !== 'object') {
-    return [];
+// Enhanced safe object utilities to prevent runtime errors
+export const safeGet = (obj, path, defaultValue = undefined) => {
+  if (!obj || typeof obj !== 'object') return defaultValue;
+  
+  if (typeof path === 'string') {
+    return obj[path] !== undefined ? obj[path] : defaultValue;
   }
-  return Object.entries(obj);
+  
+  if (Array.isArray(path)) {
+    return path.reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : defaultValue;
+    }, obj);
+  }
+  
+  return defaultValue;
 };
 
-/**
- * Safely get object keys, returning empty array if object is null/undefined
- * @param {Object} obj - The object to get keys from
- * @returns {Array} Array of keys or empty array
- */
-export const safeObjectKeys = (obj) => {
-  if (!obj || typeof obj !== 'object') {
-    return [];
-  }
-  return Object.keys(obj);
+// Safe array access with default empty array
+export const safeArray = (arr) => {
+  return Array.isArray(arr) ? arr : [];
 };
 
-/**
- * Safely get object values, returning empty array if object is null/undefined
- * @param {Object} obj - The object to get values from
- * @returns {Array} Array of values or empty array
- */
-export const safeObjectValues = (obj) => {
-  if (!obj || typeof obj !== 'object') {
-    return [];
-  }
-  return Object.values(obj);
+// Safe object access with default empty object
+export const safeObject = (obj) => {
+  return obj && typeof obj === 'object' && !Array.isArray(obj) ? obj : {};
 };
 
-/**
- * Safely access nested object properties
- * @param {Object} obj - The object to access
- * @param {string} path - Dot-separated path (e.g., 'user.profile.name')
- * @param {*} defaultValue - Default value if path doesn't exist
- * @returns {*} The value at path or defaultValue
- */
-export const safeGet = (obj, path, defaultValue = null) => {
-  if (!obj || typeof obj !== 'object') {
+// Safe entries iteration
+export const safeEntries = (obj) => {
+  return Object.entries(safeObject(obj));
+};
+
+// Safe array map with default empty array
+export const safeMap = (arr, callback) => {
+  return safeArray(arr).map(callback);
+};
+
+// Safe array filter with default empty array
+export const safeFilter = (arr, callback) => {
+  return safeArray(arr).filter(callback);
+};
+
+// Safe array length
+export const safeLength = (arr) => {
+  return safeArray(arr).length;
+};
+
+// Safe property access with optional chaining fallback
+export const safeProp = (obj, prop, defaultValue = undefined) => {
+  return obj?.[prop] ?? defaultValue;
+};
+
+// Safe nested property access
+export const safeNested = (obj, path, defaultValue = undefined) => {
+  try {
+    const keys = typeof path === 'string' ? path.split('.') : path;
+    return keys.reduce((current, key) => current?.[key], obj) ?? defaultValue;
+  } catch (error) {
+    console.warn('Safe nested access error:', error);
     return defaultValue;
   }
-  
-  const keys = path.split('.');
-  let result = obj;
-  
-  for (const key of keys) {
-    if (result == null || typeof result !== 'object') {
-      return defaultValue;
-    }
-    result = result[key];
-  }
-  
-  return result !== undefined ? result : defaultValue;
 };
 
-/**
- * Safely merge objects with null/undefined checks
- * @param {...Object} objects - Objects to merge
- * @returns {Object} Merged object
- */
-export const safeMerge = (...objects) => {
-  return objects.reduce((acc, obj) => {
-    if (obj && typeof obj === 'object') {
-      return { ...acc, ...obj };
-    }
-    return acc;
-  }, {});
+// Safe function call
+export const safeCall = (fn, ...args) => {
+  return typeof fn === 'function' ? fn(...args) : undefined;
 };
+function safeObjectEntries(...args) {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: safeObjectEntries is not implemented yet.', args);
+  return null;
+}
 
-/**
- * Check if an object is empty (null, undefined, or has no properties)
- * @param {*} obj - The object to check
- * @returns {boolean} True if object is empty
- */
-export const isEmpty = (obj) => {
-  if (obj == null) return true;
-  if (typeof obj !== 'object') return false;
-  return Object.keys(obj).length === 0;
-};
+export { safeObjectEntries };
+function safeMerge(...args) {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: safeMerge is not implemented yet.', args);
+  return null;
+}
+
+export { safeMerge };
+function safeObjectValues(...args) {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: safeObjectValues is not implemented yet.', args);
+  return null;
+}
+
+export { safeObjectValues };

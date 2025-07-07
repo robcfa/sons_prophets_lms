@@ -3,11 +3,14 @@ import { Link } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
+import { safeProp } from '../../../utils/safeObjectUtils';
 
-const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
+const CourseCard = ({ course = {}, isEnrolled = false, progress = 0 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const getDifficultyColor = (difficulty) => {
+    if (!difficulty) return 'bg-text-muted text-white';
+    
     switch (difficulty.toLowerCase()) {
       case 'beginner':
         return 'bg-success-100 text-success-700';
@@ -21,6 +24,7 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
   };
 
   const formatDuration = (minutes) => {
+    if (!minutes || minutes <= 0) return '0m';
     if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
@@ -28,15 +32,27 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
   };
 
   const renderStars = (rating) => {
+    const ratingValue = rating || 0;
     return Array.from({ length: 5 }, (_, index) => (
       <Icon
         key={index}
-        name={index < Math.floor(rating) ? "Star" : "Star"}
+        name="Star"
         size={14}
-        className={index < Math.floor(rating) ? "text-warning fill-current" : "text-text-muted"}
+        className={index < Math.floor(ratingValue) ? "text-warning fill-current" : "text-text-muted"}
       />
     ));
   };
+
+  const courseTitle = safeProp(course, 'title', 'Untitled Course');
+  const courseDescription = safeProp(course, 'description', 'No description available');
+  const instructor = safeProp(course, 'instructor', 'Unknown Instructor');
+  const difficulty = safeProp(course, 'difficulty', 'Unknown');
+  const rating = safeProp(course, 'rating', 0);
+  const duration = safeProp(course, 'duration', 0);
+  const enrollmentCount = safeProp(course, 'enrollmentCount', 0);
+  const lessonCount = safeProp(course, 'lessonCount', 0);
+  const thumbnail = safeProp(course, 'thumbnail', '/assets/images/no_image.png');
+  const courseId = safeProp(course, 'id', '');
 
   return (
     <div className="bg-card rounded-lg shadow-soft-sm border border-subtle hover:shadow-soft-md transition-all duration-200 overflow-hidden group hover-lift">
@@ -48,8 +64,8 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
           </div>
         )}
         <Image
-          src={course.thumbnail}
-          alt={course.title}
+          src={thumbnail}
+          alt={courseTitle}
           className={`w-full h-full object-cover transition-opacity duration-300 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
@@ -91,8 +107,8 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
 
         {/* Difficulty Badge */}
         <div className="absolute top-3 right-3">
-          <span className={`inline-flex items-center px-2 py-1 text-xs font-caption rounded-full ${getDifficultyColor(course.difficulty)}`}>
-            {course.difficulty}
+          <span className={`inline-flex items-center px-2 py-1 text-xs font-caption rounded-full ${getDifficultyColor(difficulty)}`}>
+            {difficulty}
           </span>
         </div>
       </div>
@@ -101,24 +117,24 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
       <div className="p-4">
         {/* Course Title */}
         <h3 className="font-heading font-heading-semibold text-text-primary text-lg mb-2 line-clamp-2 group-hover:text-primary transition-color">
-          {course.title}
+          {courseTitle}
         </h3>
 
         {/* Instructor */}
         <div className="flex items-center space-x-2 mb-3">
           <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
             <span className="text-xs font-heading font-heading-semibold text-primary">
-              {course.instructor.charAt(0)}
+              {instructor ? instructor.charAt(0).toUpperCase() : 'U'}
             </span>
           </div>
           <span className="text-sm font-body text-text-secondary">
-            {course.instructor}
+            {instructor}
           </span>
         </div>
 
         {/* Course Description */}
         <p className="text-sm font-body text-text-secondary mb-4 line-clamp-2">
-          {course.description}
+          {courseDescription}
         </p>
 
         {/* Course Stats */}
@@ -126,10 +142,10 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
           {/* Rating */}
           <div className="flex items-center space-x-1">
             <div className="flex items-center space-x-1">
-              {renderStars(course.rating)}
+              {renderStars(rating)}
             </div>
             <span className="text-sm font-data text-text-secondary ml-1">
-              {course.rating.toFixed(1)}
+              {rating ? rating.toFixed(1) : '0.0'}
             </span>
           </div>
 
@@ -137,7 +153,7 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
           <div className="flex items-center space-x-1 text-text-secondary">
             <Icon name="Clock" size={14} />
             <span className="text-sm font-data">
-              {formatDuration(course.duration)}
+              {formatDuration(duration)}
             </span>
           </div>
         </div>
@@ -146,11 +162,11 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
         <div className="flex items-center justify-between text-sm font-body text-text-secondary mb-4">
           <div className="flex items-center space-x-1">
             <Icon name="Users" size={14} />
-            <span>{course.enrollmentCount.toLocaleString()} students</span>
+            <span>{enrollmentCount.toLocaleString()} students</span>
           </div>
           <div className="flex items-center space-x-1">
             <Icon name="BookOpen" size={14} />
-            <span>{course.lessonCount} lessons</span>
+            <span>{lessonCount} lessons</span>
           </div>
         </div>
 
@@ -173,13 +189,13 @@ const CourseCard = ({ course, isEnrolled = false, progress = 0 }) => {
         {/* Action Buttons */}
         <div className="flex items-center space-x-2">
           {isEnrolled ? (
-            <Link to={`/course-player/${course.id}`} className="flex-1">
+            <Link to={courseId ? `/course-player/${courseId}` : '#'} className="flex-1">
               <Button variant="primary" size="sm" fullWidth iconName="Play" iconPosition="left">
                 Continue Learning
               </Button>
             </Link>
           ) : (
-            <Link to={`/course-catalog/${course.id}`} className="flex-1">
+            <Link to={courseId ? `/course-catalog/${courseId}` : '#'} className="flex-1">
               <Button variant="outline" size="sm" fullWidth>
                 View Details
               </Button>

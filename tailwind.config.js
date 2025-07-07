@@ -7,34 +7,54 @@ module.exports = {
   darkMode: ["class", '[data-theme="dark"]'],
   theme: {
     extend: {
+      spacing: {
+        gold: '1.618rem'
+      },
       colors: {
+        // Fix: Use proper color value references instead of CSS variables in Tailwind config
+        'brand-primary': '#FFC600',
+        
         // Updated Primary Colors - Charcoal Gray and Yellow Theme
-        'primary': '#FFC600', // Yellow accent
-        'primary-50': '#FFFBF0', // Very light yellow
-        'primary-100': '#FFF3D1', // Light yellow
-        'primary-200': '#FFE5A3', // Medium light yellow
-        'primary-300': '#FFD775', // Medium yellow
-        'primary-400': '#FFD54F', // Bright yellow
-        'primary-500': '#FFC600', // Main yellow accent
-        'primary-600': '#E6B200', // Darker yellow
-        'primary-700': '#CC9E00', // Dark yellow
-        'primary-800': '#B38A00', // Very dark yellow
-        'primary-900': '#996600', // Deepest yellow
-        'primary-foreground': '#1E1E1E', // Charcoal text
+        'primary': {
+          DEFAULT: '#FFC600',
+          50: '#FFFBF0',
+          100: '#FFF3D1',
+          200: '#FFE5A3',
+          300: '#FFD775',
+          400: '#FFD54F',
+          500: '#FFC600',
+          600: '#E6B200',
+          700: '#CC9E00',
+          800: '#B38A00',
+          900: '#996600',
+          foreground: '#1E1E1E'
+        },
 
         // Secondary Colors - Charcoal Gray
-        'secondary': '#1E1E1E', // Main charcoal
-        'secondary-50': '#F5F5F5', // Light background
-        'secondary-100': '#E0E0E0', // Light gray
-        'secondary-200': '#CCCCCC', // Medium light gray
-        'secondary-300': '#B3B3B3', // Medium gray
-        'secondary-400': '#999999', // Darker gray
-        'secondary-500': '#666666', // Dark gray
-        'secondary-600': '#4A4A4A', // Very dark gray
-        'secondary-700': '#2A2A2A', // Dark surface
-        'secondary-800': '#1E1E1E', // Main charcoal
-        'secondary-900': '#0F0F0F', // Deepest charcoal
-        'secondary-foreground': '#E0E0E0', // Light text
+        'secondary': {
+          DEFAULT: '#1E1E1E',
+          50: '#F5F5F5',
+          100: '#E0E0E0',
+          200: '#CCCCCC',
+          300: '#B3B3B3',
+          400: '#999999',
+          500: '#666666',
+          600: '#4A4A4A',
+          700: '#2A2A2A',
+          800: '#1E1E1E',
+          900: '#0F0F0F',
+          foreground: '#E0E0E0'
+        },
+
+        // Fix spacing system to use proper calc() syntax
+        spacing: {
+          'golden': 'calc(8px * 1.618)',
+          'golden2': 'calc(8px * 1.618 * 1.618)',
+          'golden3': 'calc(8px * 1.618 * 1.618 * 1.618)',
+          'base': '8px',
+          'small': 'calc(8px * 0.618)',
+          'tiny': 'calc(8px * 0.382)',
+        },
 
         // Accent Colors - Supporting Yellow Tones
         'accent': '#FFEB99', // Light yellow accent
@@ -121,19 +141,16 @@ module.exports = {
         'caption': ['Inter', 'sans-serif'],
         'data': ['JetBrains Mono', 'monospace'],
       },
+      gap: {
+        'golden': 'calc(1rem * 1.618)',
+        'base': '8px',
+        'small': 'calc(8px * 0.618)',
+      },
       fontSize: {
         'h1': ['2.5rem', { lineHeight: '1.2' }],
         'h2': ['2rem', { lineHeight: '1.2' }],
         'h3': ['1.5rem', { lineHeight: '1.2' }],
         'body': ['1rem', { lineHeight: '1.5' }],
-      },
-      spacing: {
-        'base': '8px',
-        'golden': 'calc(8px * 1.618)',
-        'golden2': 'calc(8px * 1.618 * 1.618)',
-        'golden3': 'calc(8px * 1.618 * 1.618 * 1.618)',
-        'small': 'calc(8px * 0.618)',
-        'tiny': 'calc(8px * 0.382)',
       },
       borderRadius: {
         'sm': '4px',
@@ -184,79 +201,27 @@ module.exports = {
   daisyui: {
     themes: [
       {
-        "sons-prophets-light": {
-          "primary": "#FFC600", // Yellow accent
-          "primary-focus": "#E6B200", // Darker yellow
-          "primary-content": "#1E1E1E", // Charcoal text
-          "secondary": "#1E1E1E", // Charcoal
-          "secondary-focus": "#0F0F0F", // Darker charcoal
-          "secondary-content": "#E0E0E0", // Light text
-          "accent": "#FFEB99", // Light yellow
-          "accent-focus": "#FFD54F", // Medium yellow
-          "accent-content": "#1E1E1E", // Charcoal text
-          "neutral": "#F5F5F5", // Light neutral
-          "neutral-focus": "#E0E0E0", // Medium neutral
-          "neutral-content": "#1E1E1E", // Charcoal text
-          "base-100": "#F5F5F5", // Main background
-          "base-200": "#FFFFFF", // Card background
-          "base-300": "#E0E0E0", // Input background
-          "base-content": "#1E1E1E", // Main text
-          "info": "#3B82F6", // Blue info
-          "info-content": "#FFFFFF", // White text
-          "success": "#10B981", // Green success
-          "success-content": "#FFFFFF", // White text
-          "warning": "#F59E0B", // Orange warning
-          "warning-content": "#FFFFFF", // White text
-          "error": "#EF4444", // Red error
-          "error-content": "#FFFFFF", // White text
-          "--rounded-box": "12px",
-          "--rounded-btn": "8px",
-          "--rounded-badge": "4px",
-          "--animation-btn": "0.2s",
-          "--animation-input": "0.2s",
-          "--btn-text-case": "normal",
-          "--btn-focus-scale": "0.95",
-          "--border-btn": "1px",
-          "--tab-border": "1px",
-          "--tab-radius": "8px",
+        'sons-prophets-light': {
+          'base-100': '#FCFBFA',
+          primary: '#5D1451',
+          secondary: '#F59E0B',
+          accent: '#F59E0B',
+          neutral: '#FFFBF2',
+          'border': '#5D1451',
+          'input': '#F9FAFB',
+          '--rounded-box': '0.5rem',
         },
       },
       {
-        "sons-prophets-dark": {
-          "primary": "#FFD54F", // Brighter yellow for dark mode
-          "primary-focus": "#FFC600", // Yellow accent
-          "primary-content": "#1E1E1E", // Charcoal text
-          "secondary": "#2A2A2A", // Dark surface
-          "secondary-focus": "#1E1E1E", // Darker surface
-          "secondary-content": "#E0E0E0", // Light text
-          "accent": "#3A3A3A", // Dark accent
-          "accent-focus": "#4A4A4A", // Lighter dark accent
-          "accent-content": "#E0E0E0", // Light text
-          "neutral": "#1E1E1E", // Dark neutral
-          "neutral-focus": "#0F0F0F", // Darker neutral
-          "neutral-content": "#E0E0E0", // Light text
-          "base-100": "#1E1E1E", // Main dark background
-          "base-200": "#2A2A2A", // Card dark background
-          "base-300": "#3A3A3A", // Input dark background
-          "base-content": "#E0E0E0", // Light text
-          "info": "#60A5FA", // Lighter blue for dark mode
-          "info-content": "#1E1E1E", // Dark text
-          "success": "#34D399", // Lighter green for dark mode
-          "success-content": "#1E1E1E", // Dark text
-          "warning": "#FBBF24", // Lighter orange for dark mode
-          "warning-content": "#1E1E1E", // Dark text
-          "error": "#F87171", // Lighter red for dark mode
-          "error-content": "#1E1E1E", // Dark text
-          "--rounded-box": "12px",
-          "--rounded-btn": "8px",
-          "--rounded-badge": "4px",
-          "--animation-btn": "0.2s",
-          "--animation-input": "0.2s",
-          "--btn-text-case": "normal",
-          "--btn-focus-scale": "0.95",
-          "--border-btn": "1px",
-          "--tab-border": "1px",
-          "--tab-radius": "8px",
+        'sons-prophets-dark': {
+          'base-100': '#111827',
+          primary: '#C4A484',
+          secondary: '#F5CB5C',
+          accent: '#F5CB5C',
+          neutral: '#1F2937',
+          'border': '#374151',
+          'input': '#374151',
+          '--rounded-box': '0.5rem',
         },
       },
     ],

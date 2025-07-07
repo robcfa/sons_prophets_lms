@@ -9,13 +9,14 @@ import AIVerseAssistant from './components/AIVerseAssistant';
 import ProgressTracker from './components/ProgressTracker';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { safeArray, safeProp, safeGet } from '../../utils/safeObjectUtils';
 
 const CoursePlayer = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  const [courseData, setCourseData] = useState(null);
-  const [currentLesson, setCurrentLesson] = useState(null);
+  const [courseData, setCourseData] = useState({});
+  const [currentLesson, setCurrentLesson] = useState({});
   const [completedLessons, setCompletedLessons] = useState(new Set());
   const [syllabusCollapsed, setSyllabusCollapsed] = useState(false);
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
@@ -32,7 +33,7 @@ const CoursePlayer = () => {
       try {
         setLoading(true);
         
-        // Mock course data
+        // Mock course data with safe structure
         const mockCourseData = {
           id: 'biblical-hermeneutics',
           title: 'Biblical Hermeneutics: Interpreting God\'s Word',
@@ -53,71 +54,133 @@ const CoursePlayer = () => {
                   duration: '15 min',
                   description: 'An introduction to the science and art of biblical interpretation',
                   videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-                  transcript: `Welcome to Biblical Hermeneutics. In this lesson, we'll explore what hermeneutics means and why it's essential for proper Bible study.\n\nHermeneutics comes from the Greek word 'hermeneuein,' meaning 'to interpret' or 'to explain.' It's both a science and an art - a science because it follows established principles, and an art because it requires wisdom and discernment.\n\nThe goal of hermeneutics is to understand what the biblical authors intended to communicate to their original audiences, and then apply those truths to our lives today.`
+                  transcript: `Welcome to Biblical Hermeneutics. In this lesson, we'll explore what hermeneutics means and why it's essential for proper Bible study.`
                 },
                 {
-                  id: 'intro-2',title: 'Historical Development of Interpretation',type: 'text',duration: '20 min',description: 'Tracing the history of biblical interpretation from ancient times to today',
+                  id: 'intro-2',
+                  title: 'Historical Development of Interpretation',
+                  type: 'text',
+                  duration: '20 min',
+                  description: 'Tracing the history of biblical interpretation from ancient times to today',
                   content: `<h2>The Evolution of Biblical Interpretation</h2><p>Throughout church history, different approaches to biblical interpretation have emerged, each reflecting the cultural and theological context of its time.</p><h3>Early Church Period</h3><p>The early church fathers developed foundational principles that continue to influence interpretation today...</p>`
                 },
                 {
-                  id: 'intro-3',title: 'Knowledge Check: Hermeneutics Basics',type: 'quiz',duration: '10 min',description: 'Test your understanding of basic hermeneutical concepts',
+                  id: 'intro-3',
+                  title: 'Knowledge Check: Hermeneutics Basics',
+                  type: 'quiz',
+                  duration: '10 min',
+                  description: 'Test your understanding of basic hermeneutical concepts',
                   questions: [
                     {
-                      id: 'q1',type: 'multiple-choice',question: 'What does the term "hermeneutics" mean?',
+                      id: 'q1',
+                      type: 'multiple-choice',
+                      question: 'What does the term "hermeneutics" mean?',
                       options: [
-                        'The study of ancient languages','The science and art of biblical interpretation','The history of the Bible','The translation of biblical texts'
+                        'The study of ancient languages',
+                        'The science and art of biblical interpretation',
+                        'The history of the Bible',
+                        'The translation of biblical texts'
                       ],
-                      correctAnswer: 'The science and art of biblical interpretation',explanation: 'Hermeneutics comes from the Greek word meaning "to interpret" and refers to the principles and methods used to understand biblical texts.'
+                      correctAnswer: 'The science and art of biblical interpretation',
+                      explanation: 'Hermeneutics comes from the Greek word meaning "to interpret" and refers to the principles and methods used to understand biblical texts.'
                     },
                     {
-                      id: 'q2',type: 'true-false',question: 'The primary goal of hermeneutics is to make the Bible relevant to modern readers.',correctAnswer: 'False',explanation: 'While application is important, the primary goal is to understand what the biblical authors intended to communicate to their original audiences.'
+                      id: 'q2',
+                      type: 'true-false',
+                      question: 'The primary goal of hermeneutics is to make the Bible relevant to modern readers.',
+                      correctAnswer: 'False',
+                      explanation: 'While application is important, the primary goal is to understand what the biblical authors intended to communicate to their original audiences.'
                     },
                     {
-                      id: 'q3',type: 'short-answer',question: 'Why is understanding the original context important for biblical interpretation?',correctAnswer: 'context',explanation: 'Understanding the original context helps us grasp what the author intended to communicate and prevents misinterpretation.'
+                      id: 'q3',
+                      type: 'short-answer',
+                      question: 'Why is understanding the original context important for biblical interpretation?',
+                      correctAnswer: 'context',
+                      explanation: 'Understanding the original context helps us grasp what the author intended to communicate and prevents misinterpretation.'
                     }
                   ]
                 }
               ]
             },
             {
-              id: 'context',title: 'Understanding Context',description: 'The importance of historical, cultural, and literary context',
+              id: 'context',
+              title: 'Understanding Context',
+              description: 'The importance of historical, cultural, and literary context',
               lessons: [
                 {
-                  id: 'context-1',title: 'Historical Context in Biblical Interpretation',type: 'video',duration: '18 min',description: 'Understanding the historical background of biblical texts',videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                  id: 'context-1',
+                  title: 'Historical Context in Biblical Interpretation',
+                  type: 'video',
+                  duration: '18 min',
+                  description: 'Understanding the historical background of biblical texts',
+                  videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
                   transcript: `Historical context is crucial for proper biblical interpretation. When we understand the historical circumstances surrounding a biblical text, we can better grasp its meaning and significance.\n\nConsider the book of Jeremiah. Without understanding the political turmoil of Judah's final years, the Babylonian threat, and the religious apostasy of the people, we cannot fully appreciate Jeremiah's prophetic messages.\n\nHistorical context includes understanding the political situation, social customs, economic conditions, and religious practices of the time.`
                 },
                 {
-                  id: 'context-2',title: 'Cultural and Literary Context',type: 'text',duration: '25 min',description: 'Exploring cultural backgrounds and literary forms in Scripture',
+                  id: 'context-2',
+                  title: 'Cultural and Literary Context',
+                  type: 'text',
+                  duration: '25 min',
+                  description: 'Exploring cultural backgrounds and literary forms in Scripture',
                   content: `<h2>The Importance of Cultural Context</h2><p>The Bible was written in ancient Near Eastern cultures that differ significantly from our modern Western context. Understanding these cultural differences is essential for proper interpretation.</p><h3>Literary Context</h3><p>Every biblical passage exists within a larger literary context. We must consider the genre, structure, and flow of thought within the book...</p>`
                 },
                 {
-                  id: 'context-3',title: 'Contextual Analysis Exercise',type: 'quiz',duration: '15 min',description: 'Practice identifying and analyzing different types of context',
+                  id: 'context-3',
+                  title: 'Contextual Analysis Exercise',
+                  type: 'quiz',
+                  duration: '15 min',
+                  description: 'Practice identifying and analyzing different types of context',
                   questions: [
                     {
-                      id: 'q4',type: 'multiple-choice',question: 'Which type of context refers to the circumstances surrounding when a text was written?',
+                      id: 'q4',
+                      type: 'multiple-choice',
+                      question: 'Which type of context refers to the circumstances surrounding when a text was written?',
                       options: [
-                        'Literary context','Historical context','Cultural context','Theological context'
+                        'Literary context',
+                        'Historical context',
+                        'Cultural context',
+                        'Theological context'
                       ],
-                      correctAnswer: 'Historical context',explanation: 'Historical context refers to the specific time period, events, and circumstances when the biblical text was written.'
+                      correctAnswer: 'Historical context',
+                      explanation: 'Historical context refers to the specific time period, events, and circumstances when the biblical text was written.'
                     },
                     {
-                      id: 'q5',type: 'true-false',question: 'Cultural context is less important than historical context for biblical interpretation.',correctAnswer: 'False',explanation: 'Both cultural and historical contexts are equally important for understanding the original meaning of biblical texts.'
+                      id: 'q5',
+                      type: 'true-false',
+                      question: 'Cultural context is less important than historical context for biblical interpretation.',
+                      correctAnswer: 'False',
+                      explanation: 'Both cultural and historical contexts are equally important for understanding the original meaning of biblical texts.'
                     }
                   ]
                 }
               ]
             },
             {
-              id: 'genres',title: 'Biblical Genres and Literary Forms',description: 'Understanding different types of biblical literature',
+              id: 'genres',
+              title: 'Biblical Genres and Literary Forms',
+              description: 'Understanding different types of biblical literature',
               lessons: [
                 {
-                  id: 'genres-1',title: 'Narrative Literature in the Bible',type: 'video',duration: '22 min',description: 'Interpreting biblical narratives and historical accounts',videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
+                  id: 'genres-1',
+                  title: 'Narrative Literature in the Bible',
+                  type: 'video',
+                  duration: '22 min',
+                  description: 'Interpreting biblical narratives and historical accounts',
+                  videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4'
                 },
                 {
-                  id: 'genres-2',title: 'Poetry and Wisdom Literature',type: 'text',duration: '30 min',description: 'Understanding Hebrew poetry, Psalms, and wisdom books'
+                  id: 'genres-2',
+                  title: 'Poetry and Wisdom Literature',
+                  type: 'text',
+                  duration: '30 min',
+                  description: 'Understanding Hebrew poetry, Psalms, and wisdom books'
                 },
                 {
-                  id: 'genres-3',title: 'Prophetic and Apocalyptic Literature',type: 'video',duration: '25 min',description: 'Interpreting prophetic messages and apocalyptic visions'
+                  id: 'genres-3',
+                  title: 'Prophetic and Apocalyptic Literature',
+                  type: 'video',
+                  duration: '25 min',
+                  description: 'Interpreting prophetic messages and apocalyptic visions'
                 }
               ]
             }
@@ -133,18 +196,18 @@ const CoursePlayer = () => {
             setCurrentLesson(lesson);
           } else {
             // Lesson not found, redirect to first lesson
-            const firstLesson = mockCourseData.modules[0]?.lessons[0];
+            const firstLesson = safeGet(mockCourseData, 'modules.0.lessons.0');
             if (firstLesson) {
               setCurrentLesson(firstLesson);
-              setSearchParams({ course: courseId, lesson: firstLesson.id });
+              setSearchParams({ course: courseId, lesson: safeProp(firstLesson, 'id') });
             }
           }
         } else {
           // No lesson specified, use first lesson
-          const firstLesson = mockCourseData.modules[0]?.lessons[0];
+          const firstLesson = safeGet(mockCourseData, 'modules.0.lessons.0');
           if (firstLesson) {
             setCurrentLesson(firstLesson);
-            setSearchParams({ course: courseId, lesson: firstLesson.id });
+            setSearchParams({ course: courseId, lesson: safeProp(firstLesson, 'id') });
           }
         }
 
@@ -163,19 +226,28 @@ const CoursePlayer = () => {
   }, [courseId, lessonId, setSearchParams]);
 
   const findLessonById = (courseData, lessonId) => {
-    for (const module of courseData.modules) {
-      const lesson = module.lessons.find(l => l.id === lessonId);
+    const modules = safeArray(courseData?.modules);
+    for (const module of modules) {
+      const lessons = safeArray(module?.lessons);
+      const lesson = lessons.find(l => safeProp(l, 'id') === lessonId);
       if (lesson) return lesson;
     }
     return null;
   };
 
   const handleLessonSelect = (lesson) => {
+    if (!lesson) return;
+    
     setCurrentLesson(lesson);
-    setSearchParams({ course: courseId, lesson: lesson.id });
+    const lessonId = safeProp(lesson, 'id');
+    if (lessonId) {
+      setSearchParams({ course: courseId, lesson: lessonId });
+    }
   };
 
   const handleLessonComplete = (lessonId) => {
+    if (!lessonId) return;
+    
     setCompletedLessons(prev => new Set([...prev, lessonId]));
     
     // Auto-advance to next lesson after completion
@@ -185,24 +257,31 @@ const CoursePlayer = () => {
   };
 
   const handleNextLesson = () => {
-    if (!courseData?.modules || !currentLesson) return;
+    const modules = safeArray(courseData?.modules);
+    const currentLessonId = safeProp(currentLesson, 'id');
     
-    for (let moduleIndex = 0; moduleIndex < courseData.modules.length; moduleIndex++) {
-      const module = courseData.modules[moduleIndex];
-      const lessonIndex = module.lessons.findIndex(lesson => lesson.id === currentLesson.id);
+    if (!modules.length || !currentLessonId) return;
+    
+    for (let moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
+      const module = modules[moduleIndex];
+      const lessons = safeArray(module?.lessons);
+      const lessonIndex = lessons.findIndex(lesson => safeProp(lesson, 'id') === currentLessonId);
       
       if (lessonIndex !== -1) {
         // Check if there's a next lesson in current module
-        if (lessonIndex < module.lessons.length - 1) {
-          const nextLesson = module.lessons[lessonIndex + 1];
+        if (lessonIndex < lessons.length - 1) {
+          const nextLesson = lessons[lessonIndex + 1];
           handleLessonSelect(nextLesson);
           return;
         }
         // Check if there's a next module
-        if (moduleIndex < courseData.modules.length - 1) {
-          const nextLesson = courseData.modules[moduleIndex + 1].lessons[0];
-          handleLessonSelect(nextLesson);
-          return;
+        if (moduleIndex < modules.length - 1) {
+          const nextModule = modules[moduleIndex + 1];
+          const nextLessons = safeArray(nextModule?.lessons);
+          if (nextLessons.length > 0) {
+            handleLessonSelect(nextLessons[0]);
+            return;
+          }
         }
       }
     }
@@ -212,25 +291,32 @@ const CoursePlayer = () => {
   };
 
   const handlePrevLesson = () => {
-    if (!courseData?.modules || !currentLesson) return;
+    const modules = safeArray(courseData?.modules);
+    const currentLessonId = safeProp(currentLesson, 'id');
     
-    for (let moduleIndex = 0; moduleIndex < courseData.modules.length; moduleIndex++) {
-      const module = courseData.modules[moduleIndex];
-      const lessonIndex = module.lessons.findIndex(lesson => lesson.id === currentLesson.id);
+    if (!modules.length || !currentLessonId) return;
+    
+    for (let moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
+      const module = modules[moduleIndex];
+      const lessons = safeArray(module?.lessons);
+      const lessonIndex = lessons.findIndex(lesson => safeProp(lesson, 'id') === currentLessonId);
       
       if (lessonIndex !== -1) {
         // Check if there's a previous lesson in current module
         if (lessonIndex > 0) {
-          const prevLesson = module.lessons[lessonIndex - 1];
+          const prevLesson = lessons[lessonIndex - 1];
           handleLessonSelect(prevLesson);
           return;
         }
         // Check if there's a previous module
         if (moduleIndex > 0) {
-          const prevModule = courseData.modules[moduleIndex - 1];
-          const prevLesson = prevModule.lessons[prevModule.lessons.length - 1];
-          handleLessonSelect(prevLesson);
-          return;
+          const prevModule = modules[moduleIndex - 1];
+          const prevLessons = safeArray(prevModule?.lessons);
+          if (prevLessons.length > 0) {
+            const prevLesson = prevLessons[prevLessons.length - 1];
+            handleLessonSelect(prevLesson);
+            return;
+          }
         }
       }
     }
@@ -307,7 +393,7 @@ const CoursePlayer = () => {
         } flex-shrink-0 hidden md:block`}>
           <CourseSyllabus
             courseData={courseData}
-            currentLessonId={currentLesson?.id}
+            currentLessonId={safeProp(currentLesson, 'id')}
             onLessonSelect={handleLessonSelect}
             isCollapsed={syllabusCollapsed}
             onToggleCollapse={() => setSyllabusCollapsed(!syllabusCollapsed)}
@@ -331,7 +417,7 @@ const CoursePlayer = () => {
             <div className="w-80 flex-shrink-0 p-4 hidden lg:block">
               <ProgressTracker
                 courseData={courseData}
-                currentLessonId={currentLesson?.id}
+                currentLessonId={safeProp(currentLesson, 'id')}
                 completedLessons={completedLessons}
                 onLessonSelect={handleLessonSelect}
               />
@@ -357,7 +443,7 @@ const CoursePlayer = () => {
           <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[90vw]">
             <CourseSyllabus
               courseData={courseData}
-              currentLessonId={currentLesson?.id}
+              currentLessonId={safeProp(currentLesson, 'id')}
               onLessonSelect={(lesson) => {
                 handleLessonSelect(lesson);
                 setSyllabusCollapsed(true);

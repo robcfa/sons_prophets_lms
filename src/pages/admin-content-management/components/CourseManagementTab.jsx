@@ -3,6 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import { safeArray, safeProp, safeFilter } from '../../../utils/safeObjectUtils';
 
 const CourseManagementTab = ({ onAIWizardOpen }) => {
   const [courses, setCourses] = useState([]);
@@ -13,7 +14,7 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
   const [selectedCourses, setSelectedCourses] = useState([]);
 
   useEffect(() => {
-    // Mock course data
+    // Mock course data with safe defaults
     const mockCourses = [
       {
         id: 'course-1',
@@ -80,9 +81,9 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
   }, []);
 
   const handleDragEnd = (result) => {
-    if (!result.destination) return;
+    if (!result?.destination) return;
 
-    const items = Array.from(courses);
+    const items = Array.from(safeArray(courses));
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
@@ -90,6 +91,8 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
   };
 
   const handleCourseSelect = (courseId) => {
+    if (!courseId) return;
+    
     setSelectedCourses(prev => 
       prev.includes(courseId) 
         ? prev.filter(id => id !== courseId)
@@ -104,6 +107,8 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
   };
 
   const getStatusColor = (status) => {
+    if (!status) return 'bg-text-muted text-white';
+    
     const colors = {
       published: 'bg-success-100 text-success-700',
       draft: 'bg-warning-100 text-warning-700',
@@ -113,6 +118,8 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
   };
 
   const getDifficultyColor = (difficulty) => {
+    if (!difficulty) return 'bg-text-muted text-white';
+    
     const colors = {
       Beginner: 'bg-accent-100 text-accent-700',
       Intermediate: 'bg-primary-100 text-primary-700',
@@ -121,10 +128,14 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
     return colors[difficulty] || 'bg-text-muted text-white';
   };
 
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
+  const filteredCourses = safeFilter(courses, course => {
+    const title = safeProp(course, 'title', '').toLowerCase();
+    const description = safeProp(course, 'description', '').toLowerCase();
+    const status = safeProp(course, 'status', '');
+    
+    const matchesSearch = title.includes(searchTerm.toLowerCase()) ||
+                         description.includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -204,124 +215,139 @@ const CourseManagementTab = ({ onAIWizardOpen }) => {
               ref={provided.innerRef}
               className="space-y-4"
             >
-              {filteredCourses.map((course, index) => (
-                <Draggable key={course.id} draggableId={course.id} index={index}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`bg-card border border-subtle rounded-lg p-6 hover:shadow-soft-md transition-all ${
-                        snapshot.isDragging ? 'shadow-soft-lg' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Drag Handle */}
-                        <div
-                          {...provided.dragHandleProps}
-                          className="mt-2 text-text-muted hover:text-text-primary cursor-grab"
-                        >
-                          <Icon name="GripVertical" size={20} />
-                        </div>
+              {safeArray(filteredCourses).map((course, index) => {
+                const courseId = safeProp(course, 'id');
+                const courseTitle = safeProp(course, 'title', 'Untitled Course');
+                const courseDescription = safeProp(course, 'description', 'No description');
+                const status = safeProp(course, 'status', 'unknown');
+                const difficulty = safeProp(course, 'difficulty', 'Unknown');
+                const author = safeProp(course, 'author', 'Unknown Author');
+                const lastModified = safeProp(course, 'lastModified');
+                const modules = safeProp(course, 'modules', 0);
+                const lessons = safeProp(course, 'lessons', 0);
+                const enrollments = safeProp(course, 'enrollments', 0);
+                const estimatedHours = safeProp(course, 'estimatedHours', 0);
+                const thumbnail = safeProp(course, 'thumbnail', '/assets/images/no_image.png');
 
-                        {/* Course Thumbnail */}
-                        <div className="w-20 h-20 bg-surface rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={course.thumbnail}
-                            alt={course.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.src = '/assets/images/no_image.png';
-                            }}
-                          />
-                        </div>
-
-                        {/* Course Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="font-heading font-heading-semibold text-text-primary text-lg mb-1">
-                                {course.title}
-                              </h3>
-                              <p className="text-sm text-text-secondary mb-2 line-clamp-2">
-                                {course.description}
-                              </p>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 ml-4">
-                              <input
-                                type="checkbox"
-                                checked={selectedCourses.includes(course.id)}
-                                onChange={() => handleCourseSelect(course.id)}
-                                className="w-4 h-4 text-primary border-subtle rounded focus:ring-primary"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Course Meta */}
-                          <div className="flex flex-wrap items-center gap-4 mb-3">
-                            <span className={`px-2 py-1 text-xs font-caption rounded-full ${getStatusColor(course.status)}`}>
-                              {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
-                            </span>
-                            <span className={`px-2 py-1 text-xs font-caption rounded-full ${getDifficultyColor(course.difficulty)}`}>
-                              {course.difficulty}
-                            </span>
-                            <span className="text-xs text-text-secondary">
-                              By {course.author}
-                            </span>
-                            <span className="text-xs text-text-secondary">
-                              Modified {course.lastModified.toLocaleDateString()}
-                            </span>
-                          </div>
-
-                          {/* Course Stats */}
-                          <div className="flex flex-wrap items-center gap-6 text-sm text-text-secondary">
-                            <div className="flex items-center gap-1">
-                              <Icon name="BookOpen" size={16} />
-                              <span>{course.modules} modules</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Icon name="Play" size={16} />
-                              <span>{course.lessons} lessons</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Icon name="Users" size={16} />
-                              <span>{course.enrollments} enrolled</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Icon name="Clock" size={16} />
-                              <span>{course.estimatedHours}h estimated</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedCourse(course)}
+                return (
+                  <Draggable key={courseId || index} draggableId={courseId || `course-${index}`} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`bg-card border border-subtle rounded-lg p-6 hover:shadow-soft-md transition-all ${
+                          snapshot.isDragging ? 'shadow-soft-lg' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          {/* Drag Handle */}
+                          <div
+                            {...provided.dragHandleProps}
+                            className="mt-2 text-text-muted hover:text-text-primary cursor-grab"
                           >
-                            <Icon name="Edit" size={16} />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Icon name="Eye" size={16} />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Icon name="MoreVertical" size={16} />
-                          </Button>
+                            <Icon name="GripVertical" size={20} />
+                          </div>
+
+                          {/* Course Thumbnail */}
+                          <div className="w-20 h-20 bg-surface rounded-lg overflow-hidden flex-shrink-0">
+                            <img
+                              src={thumbnail}
+                              alt={courseTitle}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = '/assets/images/no_image.png';
+                              }}
+                            />
+                          </div>
+
+                          {/* Course Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="font-heading font-heading-semibold text-text-primary text-lg mb-1">
+                                  {courseTitle}
+                                </h3>
+                                <p className="text-sm text-text-secondary mb-2 line-clamp-2">
+                                  {courseDescription}
+                                </p>
+                              </div>
+                              
+                              <div className="flex items-center gap-2 ml-4">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedCourses.includes(courseId)}
+                                  onChange={() => handleCourseSelect(courseId)}
+                                  className="w-4 h-4 text-primary border-subtle rounded focus:ring-primary"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Course Meta */}
+                            <div className="flex flex-wrap items-center gap-4 mb-3">
+                              <span className={`px-2 py-1 text-xs font-caption rounded-full ${getStatusColor(status)}`}>
+                                {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
+                              </span>
+                              <span className={`px-2 py-1 text-xs font-caption rounded-full ${getDifficultyColor(difficulty)}`}>
+                                {difficulty}
+                              </span>
+                              <span className="text-xs text-text-secondary">
+                                By {author}
+                              </span>
+                              <span className="text-xs text-text-secondary">
+                                Modified {lastModified ? lastModified.toLocaleDateString() : 'Unknown'}
+                              </span>
+                            </div>
+
+                            {/* Course Stats */}
+                            <div className="flex flex-wrap items-center gap-6 text-sm text-text-secondary">
+                              <div className="flex items-center gap-1">
+                                <Icon name="BookOpen" size={16} />
+                                <span>{modules} modules</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Icon name="Play" size={16} />
+                                <span>{lessons} lessons</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Icon name="Users" size={16} />
+                                <span>{enrollments} enrolled</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Icon name="Clock" size={16} />
+                                <span>{estimatedHours}h estimated</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedCourse(course)}
+                            >
+                              <Icon name="Edit" size={16} />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Icon name="Eye" size={16} />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Icon name="MoreVertical" size={16} />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
+                    )}
+                  </Draggable>
+                );
+              })}
               {provided.placeholder}
             </div>
           )}
         </Droppable>
       </DragDropContext>
 
-      {filteredCourses.length === 0 && (
+      {safeArray(filteredCourses).length === 0 && (
         <div className="text-center py-12">
           <Icon name="BookOpen" size={48} className="text-text-muted mx-auto mb-4" />
           <h3 className="font-heading font-heading-semibold text-text-primary mb-2">

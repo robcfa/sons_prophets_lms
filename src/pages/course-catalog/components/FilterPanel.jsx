@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
-import { safeObjectValues } from '../../../utils/safeObjectUtils';
+import { safeObjectValues, safeGet } from '../../../utils/safeObjectUtils';
 
 const FilterPanel = ({ 
-  filters, 
+  filters = {}, 
   onFiltersChange, 
   isOpen, 
   onClose, 
-  courseStats 
+  courseStats = {} 
 }) => {
-  const [localFilters, setLocalFilters] = useState(filters);
+  const [localFilters, setLocalFilters] = useState(filters || {});
 
   const filterSections = [
     {
@@ -19,12 +19,12 @@ const FilterPanel = ({
       title: 'Topics',
       icon: 'Tag',
       options: [
-        { value: 'prophecy', label: 'Prophecy', count: courseStats.topics.prophecy || 0 },
-        { value: 'major-prophets', label: 'Major Prophets', count: courseStats.topics.majorProphets || 0 },
-        { value: 'minor-prophets', label: 'Minor Prophets', count: courseStats.topics.minorProphets || 0 },
-        { value: 'messianic', label: 'Messianic Prophecy', count: courseStats.topics.messianic || 0 },
-        { value: 'historical', label: 'Historical Context', count: courseStats.topics.historical || 0 },
-        { value: 'interpretation', label: 'Interpretation', count: courseStats.topics.interpretation || 0 }
+        { value: 'prophecy', label: 'Prophecy', count: safeGet(courseStats, 'topics.prophecy', 0) },
+        { value: 'major-prophets', label: 'Major Prophets', count: safeGet(courseStats, 'topics.majorProphets', 0) },
+        { value: 'minor-prophets', label: 'Minor Prophets', count: safeGet(courseStats, 'topics.minorProphets', 0) },
+        { value: 'messianic', label: 'Messianic Prophecy', count: safeGet(courseStats, 'topics.messianic', 0) },
+        { value: 'historical', label: 'Historical Context', count: safeGet(courseStats, 'topics.historical', 0) },
+        { value: 'interpretation', label: 'Interpretation', count: safeGet(courseStats, 'topics.interpretation', 0) }
       ]
     },
     {
@@ -32,9 +32,9 @@ const FilterPanel = ({
       title: 'Difficulty Level',
       icon: 'BarChart3',
       options: [
-        { value: 'beginner', label: 'Beginner', count: courseStats.difficulty.beginner || 0 },
-        { value: 'intermediate', label: 'Intermediate', count: courseStats.difficulty.intermediate || 0 },
-        { value: 'advanced', label: 'Advanced', count: courseStats.difficulty.advanced || 0 }
+        { value: 'beginner', label: 'Beginner', count: safeGet(courseStats, 'difficulty.beginner', 0) },
+        { value: 'intermediate', label: 'Intermediate', count: safeGet(courseStats, 'difficulty.intermediate', 0) },
+        { value: 'advanced', label: 'Advanced', count: safeGet(courseStats, 'difficulty.advanced', 0) }
       ]
     },
     {
@@ -61,9 +61,9 @@ const FilterPanel = ({
   ];
 
   const handleFilterChange = (sectionId, optionValue, checked) => {
-    const newFilters = { ...localFilters };
+    const newFilters = { ...(localFilters || {}) };
     
-    if (!newFilters[sectionId]) {
+    if (!Array.isArray(newFilters[sectionId])) {
       newFilters[sectionId] = [];
     }
 
@@ -88,7 +88,8 @@ const FilterPanel = ({
   };
 
   const getActiveFilterCount = () => {
-    return safeObjectValues(localFilters || {}).reduce((total, filterArray) => {
+    const filterValues = safeObjectValues(localFilters || {});
+    return filterValues.reduce((total, filterArray) => {
       return total + (Array.isArray(filterArray) ? filterArray.length : 0);
     }, 0);
   };
