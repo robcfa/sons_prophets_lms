@@ -34,7 +34,7 @@ const BiblicalTextDisplay = ({
         23: [
           { verse: 1, text: "The Lord is my shepherd, I lack nothing.", crossRefs: ['John 10:11', 'Ezekiel 34:11'] },
           { verse: 2, text: "He makes me lie down in green pastures, he leads me beside quiet waters,", crossRefs: ['Isaiah 49:10'] },
-          { verse: 3, text: "he refreshes my soul. He guides me along the right paths for his name's sake.", crossRefs: ['Psalm 25:11'] },
+          { verse: 3, text: "he refreshes my soul. He guides me along the right paths for his name\'s sake.", crossRefs: ['Psalm 25:11'] },
           { verse: 4, text: "Even though I walk through the darkest valley, I will fear no evil, for you are with me; your rod and your staff, they comfort me.", crossRefs: ['Isaiah 43:2'] },
           { verse: 5, text: "You prepare a table before me in the presence of my enemies. You anoint my head with oil; my cup overflows.", crossRefs: ['Psalm 92:10'] },
           { verse: 6, text: "Surely your goodness and love will follow me all the days of my life, and I will dwell in the house of the Lord forever.", crossRefs: ['Psalm 27:4'] }

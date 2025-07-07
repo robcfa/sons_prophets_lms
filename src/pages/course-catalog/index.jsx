@@ -1,364 +1,319 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-
-import Button from '../../components/ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
+import { getUserPlan } from '../../utils/planUtils';
+import MobileNav from '../../components/Layout/MobileNav';
+import Sidebar from '../../components/Layout/Sidebar';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import PrimaryNavigation from '../../components/ui/PrimaryNavigation';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
-
-import FilterPanel from './components/FilterPanel';
-import FilterChips from './components/FilterChips';
 import SearchBar from './components/SearchBar';
+import FilterPanel from './components/FilterPanel';
 import SortDropdown from './components/SortDropdown';
 import CourseGrid from './components/CourseGrid';
+import FilterChips from './components/FilterChips';
+import Icon from '../../components/AppIcon';
+import { safeObjectValues } from '../../utils/safeObjectUtils';
 
 const CourseCatalog = () => {
+  const { user, userProfile } = useAuth();
+  const userPlan = getUserPlan({ user, userProfile });
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilters, setActiveFilters] = useState({});
-  const [sortBy, setSortBy] = useState('relevance');
-  const [showFilters, setShowFilters] = useState(false);
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
-  const [courseProgress, setCourseProgress] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilters, setSelectedFilters] = useState({
+    category: [],
+    difficulty: [],
+    duration: [],
+    instructor: []
+  });
+  const [sortBy, setSortBy] = useState('newest');
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock course data
-  const mockCourses = [
-    {
-      id: 'intro-biblical-prophecy',
-      title: 'Introduction to Biblical Prophecy',
-      description: 'Explore the foundational principles of biblical prophecy and learn to understand prophetic literature in its historical and theological context.',
-      instructor: 'Dr. Sarah Johnson',
-      thumbnail: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=225&fit=crop',
-      difficulty: 'Beginner',
-      duration: 180, // minutes
-      rating: 4.8,
-      enrollmentCount: 1247,
-      lessonCount: 12,
-      topics: ['prophecy', 'interpretation'],
-      createdAt: new Date('2024-01-15')
-    },
-    {
-      id: 'major-prophets-overview',
-      title: 'Major Prophets: Isaiah, Jeremiah, Ezekiel',
-      description: 'Deep dive into the major prophetic books of the Old Testament, examining their historical context, literary structure, and theological themes.',
-      instructor: 'Prof. Michael Chen',
-      thumbnail: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=225&fit=crop',
-      difficulty: 'Intermediate',
-      duration: 480, // minutes
-      rating: 4.9,
-      enrollmentCount: 892,
-      lessonCount: 24,
-      topics: ['major-prophets', 'historical'],
-      createdAt: new Date('2024-02-01')
-    },
-    {
-      id: 'minor-prophets-study',
-      title: 'Minor Prophets: Voices of Warning and Hope',
-      description: 'Study the twelve minor prophets and their powerful messages of judgment, restoration, and hope for God\'s people.',
-      instructor: 'Dr. David Williams',
-      thumbnail: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=225&fit=crop',
-      difficulty: 'Intermediate',
-      duration: 360, // minutes
-      rating: 4.7,
-      enrollmentCount: 634,
-      lessonCount: 18,
-      topics: ['minor-prophets', 'interpretation'],
-      createdAt: new Date('2024-01-20')
-    },
-    {
-      id: 'messianic-prophecy',
-      title: 'Messianic Prophecy in the Old Testament',
-      description: 'Examine the prophetic passages that point to the coming Messiah and their fulfillment in the New Testament.',
-      instructor: 'Rev. Mary Thompson',
-      thumbnail: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=225&fit=crop',
-      difficulty: 'Advanced',
-      duration: 300, // minutes
-      rating: 4.9,
-      enrollmentCount: 456,
-      lessonCount: 15,
-      topics: ['messianic', 'prophecy'],
-      createdAt: new Date('2024-03-01')
-    },
-    {
-      id: 'prophetic-interpretation',
-      title: 'Principles of Prophetic Interpretation',
-      description: 'Learn the hermeneutical principles essential for understanding and interpreting prophetic literature correctly.',
-      instructor: 'Dr. Sarah Johnson',
-      thumbnail: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=225&fit=crop',
-      difficulty: 'Advanced',
-      duration: 240, // minutes
-      rating: 4.6,
-      enrollmentCount: 378,
-      lessonCount: 10,
-      topics: ['interpretation', 'prophecy'],
-      createdAt: new Date('2024-02-15')
-    },
-    {
-      id: 'daniel-revelation',
-      title: 'Apocalyptic Literature: Daniel and Revelation',
-      description: 'Explore the apocalyptic visions of Daniel and their connection to the book of Revelation in the New Testament.',
-      instructor: 'Prof. Michael Chen',
-      thumbnail: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=400&h=225&fit=crop',
-      difficulty: 'Advanced',
-      duration: 420, // minutes
-      rating: 4.8,
-      enrollmentCount: 523,
-      lessonCount: 21,
-      topics: ['prophecy', 'interpretation'],
-      createdAt: new Date('2024-01-10')
-    }
-  ];
-
-  // Mock enrolled courses and progress
-  const mockEnrolledCourses = ['intro-biblical-prophecy', 'major-prophets-overview'];
-  const mockCourseProgress = {
-    'intro-biblical-prophecy': 75,
-    'major-prophets-overview': 45
-  };
-
-  // Mock course statistics for filters
-  const courseStats = {
-    topics: {
-      prophecy: 4,
-      majorProphets: 1,
-      minorProphets: 1,
-      messianic: 1,
-      historical: 1,
-      interpretation: 4
-    },
-    difficulty: {
-      beginner: 1,
-      intermediate: 2,
-      advanced: 3
-    },
-    instructors: {
-      drSarahJohnson: 2,
-      profMichaelChen: 2,
-      drDavidWilliams: 1,
-      revMaryThompson: 1
-    },
-    duration: {
-      short: 1,
-      medium: 3,
-      long: 2
-    }
-  };
-
+  // Mock data for courses
   useEffect(() => {
-    // Simulate API call
-    setLoading(true);
+    const mockCourses = [
+      {
+        id: 1,
+        title: 'Introduction to Old Testament Prophecy',
+        instructor: 'Dr. Sarah Martinez',
+        category: 'Prophetic Literature',
+        difficulty: 'beginner',
+        duration: 8,
+        price: 0,
+        thumbnail: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400',
+        rating: 4.8,
+        enrolledCount: 1234,
+        description: 'A comprehensive introduction to the prophetic books of the Old Testament, covering historical context, literary structure, and theological themes.',
+        isNew: true,
+        isFeatured: true
+      },
+      {
+        id: 2,
+        title: 'Understanding Isaiah: The Servant Songs',
+        instructor: 'Prof. Michael Thompson',
+        category: 'Isaiah',
+        difficulty: 'intermediate',
+        duration: 12,
+        price: 49.99,
+        thumbnail: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+        rating: 4.9,
+        enrolledCount: 892,
+        description: 'Deep dive into the Servant Songs of Isaiah, exploring their messianic implications and theological significance.',
+        isNew: false,
+        isFeatured: true
+      },
+      {
+        id: 3,
+        title: 'Ezekiel\'s Visions and Their Meaning',
+        instructor: 'Pastor David Kim',
+        category: 'Ezekiel',
+        difficulty: 'advanced',
+        duration: 16,
+        price: 79.99,
+        thumbnail: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400',
+        rating: 4.7,
+        enrolledCount: 567,
+        description: 'Explore the complex visions of Ezekiel and their prophetic significance for Israel and the church.',
+        isNew: false,
+        isFeatured: false
+      }
+    ];
+
     setTimeout(() => {
       setCourses(mockCourses);
       setFilteredCourses(mockCourses);
-      setEnrolledCourses(mockEnrolledCourses);
-      setCourseProgress(mockCourseProgress);
-      setLoading(false);
+      setIsLoading(false);
     }, 1000);
   }, []);
 
+  // Filter and search logic
   useEffect(() => {
-    // Apply filters and search
-    let filtered = [...courses];
+    let filtered = courses;
 
     // Apply search filter
-    if (searchTerm) {
+    if (searchQuery) {
       filtered = filtered.filter(course =>
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.topics.some(topic => topic.toLowerCase().includes(searchTerm.toLowerCase()))
+        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        course.instructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        course.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        course.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply category filters
-    Object.entries(activeFilters).forEach(([category, values]) => {
-      if (Array.isArray(values) && values.length > 0) {
-        filtered = filtered.filter(course => {
-          switch (category) {
-            case 'topic':
-              return values.some(value => course.topics.includes(value));
-            case 'difficulty':
-              return values.includes(course.difficulty.toLowerCase());
-            case 'instructor':
-              const instructorKey = course.instructor.toLowerCase().replace(/[^a-z]/g, '');
-              return values.some(value => value.replace(/[^a-z]/g, '') === instructorKey);
-            case 'duration':
-              if (values.includes('short')) return course.duration < 120;
-              if (values.includes('medium')) return course.duration >= 120 && course.duration <= 480;
-              if (values.includes('long')) return course.duration > 480;
-              return true;
+    // Apply category filter
+    if (selectedFilters.category.length > 0) {
+      filtered = filtered.filter(course =>
+        selectedFilters.category.includes(course.category)
+      );
+    }
+
+    // Apply difficulty filter
+    if (selectedFilters.difficulty.length > 0) {
+      filtered = filtered.filter(course =>
+        selectedFilters.difficulty.includes(course.difficulty)
+      );
+    }
+
+    // Apply duration filter
+    if (selectedFilters.duration.length > 0) {
+      filtered = filtered.filter(course => {
+        const duration = course.duration;
+        return selectedFilters.duration.some(filter => {
+          switch (filter) {
+            case 'short':
+              return duration <= 4;
+            case 'medium':
+              return duration > 4 && duration <= 12;
+            case 'long':
+              return duration > 12;
             default:
-              return true;
+              return false;
           }
         });
-      }
-    });
+      });
+    }
+
+    // Apply instructor filter
+    if (selectedFilters.instructor.length > 0) {
+      filtered = filtered.filter(course =>
+        selectedFilters.instructor.includes(course.instructor)
+      );
+    }
 
     // Apply sorting
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'popularity':
-          return b.enrollmentCount - a.enrollmentCount;
-        case 'newest':
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        case 'oldest':
-          return new Date(a.createdAt) - new Date(b.createdAt);
-        case 'alphabetical':
-          return a.title.localeCompare(b.title);
-        case 'rating':
-          return b.rating - a.rating;
-        case 'duration-short':
-          return a.duration - b.duration;
-        case 'duration-long':
-          return b.duration - a.duration;
-        default: // relevance
-          return 0;
-      }
-    });
+    switch (sortBy) {
+      case 'newest':
+        filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        break;
+      case 'rating':
+        filtered.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'enrolled':
+        filtered.sort((a, b) => b.enrolledCount - a.enrolledCount);
+        break;
+      case 'price-low':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        break;
+    }
 
     setFilteredCourses(filtered);
-  }, [courses, searchTerm, activeFilters, sortBy]);
+  }, [courses, searchQuery, selectedFilters, sortBy]);
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
+  const handleFilterChange = (filterType, value) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: prev[filterType].includes(value)
+        ? prev[filterType].filter(item => item !== value)
+        : [...prev[filterType], value]
+    }));
   };
 
-  const handleFiltersChange = (newFilters) => {
-    setActiveFilters(newFilters);
+  const removeFilter = (filterType, value) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: prev[filterType].filter(item => item !== value)
+    }));
   };
 
-  const handleRemoveFilter = (category, value) => {
-    const newFilters = { ...activeFilters };
-    if (newFilters[category]) {
-      newFilters[category] = newFilters[category].filter(v => v !== value);
-      if (newFilters[category].length === 0) {
-        delete newFilters[category];
-      }
-    }
-    setActiveFilters(newFilters);
-  };
-
-  const handleClearAllFilters = () => {
-    setActiveFilters({});
-  };
-
-  const handleSortChange = (newSort) => {
-    setSortBy(newSort);
+  const clearAllFilters = () => {
+    setSelectedFilters({
+      category: [],
+      difficulty: [],
+      duration: [],
+      instructor: []
+    });
+    setSearchQuery('');
   };
 
   const getActiveFilterCount = () => {
-    return Object.values(activeFilters).reduce((total, filterArray) => {
-      return total + (Array.isArray(filterArray) ? filterArray.length : 0);
-    }, 0);
+    return safeObjectValues(selectedFilters || {}).reduce((count, filterArray) => 
+      count + (Array.isArray(filterArray) ? filterArray.length : 0), 0);
   };
 
   return (
     <>
       <Helmet>
         <title>Course Catalog - Sons Prophets LMS</title>
-        <meta name="description" content="Discover and enroll in Old Testament prophecy courses. Browse our comprehensive catalog of theological education courses with expert instructors." />
+        <meta name="description" content="Browse our comprehensive collection of Old Testament prophecy courses" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <GlobalHeader />
-        <PrimaryNavigation />
-        <BreadcrumbTrail />
+      <div className="min-h-screen bg-page">
+        <MobileNav plan={userPlan} />
+        <div className="flex">
+          <Sidebar plan={userPlan} />
+          
+          <div className="flex-1 flex flex-col">
+            <GlobalHeader />
+            <PrimaryNavigation />
+            <BreadcrumbTrail />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-heading font-heading-bold text-text-primary mb-2">
+            <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+              <div className="mb-8">
+                <h1 className="text-3xl font-heading font-heading-bold text-primary mb-2">
                   Course Catalog
                 </h1>
-                <p className="text-text-secondary font-body">
-                  Discover comprehensive Old Testament prophecy courses designed to deepen your understanding of biblical prophecy.
+                <p className="text-secondary font-body">
+                  Discover comprehensive courses on Old Testament prophecy and biblical studies
                 </p>
               </div>
-              
-              <div className="flex items-center space-x-3">
-                <span className="text-sm font-body text-text-secondary">
-                  {filteredCourses.length} of {courses.length} courses
-                </span>
+
+              {/* Search and Filter Section */}
+              <div className="mb-8">
+                <div className="flex flex-col lg:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <SearchBar 
+                      searchQuery={searchQuery}
+                      onSearchChange={setSearchQuery}
+                      placeholder="Search courses, instructors, or topics..."
+                    />
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <SortDropdown
+                      sortBy={sortBy}
+                      onSortChange={setSortBy}
+                    />
+                    <button
+                      onClick={() => setIsFilterPanelOpen(true)}
+                      className="flex items-center px-4 py-2 bg-card border border-divider rounded-lg hover:bg-primary/5 transition-colors"
+                    >
+                      <Icon name="Filter" size={16} className="mr-2" />
+                      Filters
+                      {getActiveFilterCount() > 0 && (
+                        <span className="ml-2 bg-primary text-white text-xs rounded-full px-2 py-1">
+                          {getActiveFilterCount()}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter Chips */}
+                <FilterChips
+                  selectedFilters={selectedFilters}
+                  onRemoveFilter={removeFilter}
+                  onClearAll={clearAllFilters}
+                />
               </div>
-            </div>
-          </div>
 
-          {/* Search and Controls */}
-          <div className="mb-6 space-y-4">
-            {/* Search Bar */}
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <SearchBar onSearch={handleSearch} />
+              {/* Course Grid */}
+              <div className="mb-8">
+                {isLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, index) => (
+                      <div key={index} className="card animate-pulse">
+                        <div className="bg-divider h-48 rounded-lg mb-4"></div>
+                        <div className="space-y-2">
+                          <div className="bg-divider h-4 rounded w-3/4"></div>
+                          <div className="bg-divider h-4 rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <CourseGrid
+                    courses={filteredCourses}
+                    userPlan={userPlan}
+                  />
+                )}
               </div>
-              
-              <div className="flex items-center space-x-3">
-                {/* Filter Toggle Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden"
-                  iconName="Filter"
-                  iconPosition="left"
-                >
-                  Filters
-                  {getActiveFilterCount() > 0 && (
-                    <span className="ml-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {getActiveFilterCount()}
-                    </span>
-                  )}
-                </Button>
 
-                {/* Sort Dropdown */}
-                <SortDropdown currentSort={sortBy} onSortChange={handleSortChange} />
-              </div>
-            </div>
-
-            {/* Active Filter Chips */}
-            <FilterChips
-              activeFilters={activeFilters}
-              onRemoveFilter={handleRemoveFilter}
-              onClearAll={handleClearAllFilters}
-            />
+              {/* No Results */}
+              {!isLoading && filteredCourses.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📚</div>
+                  <h3 className="text-lg font-heading font-heading-medium text-primary mb-2">
+                    No courses found
+                  </h3>
+                  <p className="text-secondary font-body mb-4">
+                    Try adjusting your search terms or filters
+                  </p>
+                  <button
+                    onClick={clearAllFilters}
+                    className="button bg-primary text-white"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              )}
+            </main>
           </div>
+        </div>
 
-          {/* Main Content */}
-          <div className="flex gap-8">
-            {/* Desktop Filter Sidebar */}
-            <div className="hidden lg:block w-80 flex-shrink-0">
-              <FilterPanel
-                filters={activeFilters}
-                onFiltersChange={handleFiltersChange}
-                isOpen={true}
-                onClose={() => {}}
-                courseStats={courseStats}
-              />
-            </div>
-
-            {/* Course Grid */}
-            <div className="flex-1 min-w-0">
-              <CourseGrid
-                courses={filteredCourses}
-                loading={loading}
-                enrolledCourses={enrolledCourses}
-                courseProgress={courseProgress}
-              />
-            </div>
-          </div>
-
-          {/* Mobile Filter Panel */}
-          <FilterPanel
-            filters={activeFilters}
-            onFiltersChange={handleFiltersChange}
-            isOpen={showFilters}
-            onClose={() => setShowFilters(false)}
-            courseStats={courseStats}
-          />
-        </main>
+        {/* Filter Panel */}
+        <FilterPanel
+          isOpen={isFilterPanelOpen}
+          onClose={() => setIsFilterPanelOpen(false)}
+          selectedFilters={selectedFilters}
+          onFilterChange={handleFilterChange}
+          courses={courses}
+        />
       </div>
     </>
   );

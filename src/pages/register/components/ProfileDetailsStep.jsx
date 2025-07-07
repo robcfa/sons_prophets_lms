@@ -1,6 +1,6 @@
 import React from 'react';
-
 import Icon from '../../../components/AppIcon';
+import { safeGet } from '../../../utils/safeObjectUtils';
 
 const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
   const educationLevels = [
@@ -33,12 +33,17 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
   ];
 
   const handleInterestToggle = (interestId) => {
-    const currentInterests = formData.theologicalInterests || [];
-    const updatedInterests = currentInterests.includes(interestId)
-      ? currentInterests.filter(id => id !== interestId)
-      : [...currentInterests, interestId];
+    const currentInterests = safeGet(formData, 'theologicalInterests', []);
+    const safeCurrentInterests = Array.isArray(currentInterests) ? currentInterests : [];
+    
+    const updatedInterests = safeCurrentInterests.includes(interestId)
+      ? safeCurrentInterests.filter(id => id !== interestId)
+      : [...safeCurrentInterests, interestId];
     onFormChange('theologicalInterests', updatedInterests);
   };
+
+  const currentInterests = safeGet(formData, 'theologicalInterests', []);
+  const safeCurrentInterests = Array.isArray(currentInterests) ? currentInterests : [];
 
   return (
     <div className="space-y-6">
@@ -58,12 +63,12 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
             Educational Background *
           </label>
           <select
-            value={formData.educationLevel}
+            value={safeGet(formData, 'educationLevel', '')}
             onChange={(e) => onFormChange('educationLevel', e.target.value)}
             className={`
               w-full px-4 py-3 border rounded-lg font-body text-text-primary bg-background
               focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-              transition-color ${errors.educationLevel ? 'border-error' : 'border-border'}
+              transition-color ${safeGet(errors, 'educationLevel') ? 'border-error' : 'border-border'}
             `}
           >
             <option value="">Select your education level</option>
@@ -73,7 +78,7 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
               </option>
             ))}
           </select>
-          {errors.educationLevel && (
+          {safeGet(errors, 'educationLevel') && (
             <p className="mt-1 text-sm text-error font-body flex items-center">
               <Icon name="AlertCircle" size={16} className="mr-1" />
               {errors.educationLevel}
@@ -91,7 +96,7 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {theologicalInterests.map((interest) => {
-              const isSelected = (formData.theologicalInterests || []).includes(interest.id);
+              const isSelected = safeCurrentInterests.includes(interest.id);
               return (
                 <div
                   key={interest.id}
@@ -118,7 +123,7 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
               );
             })}
           </div>
-          {errors.theologicalInterests && (
+          {safeGet(errors, 'theologicalInterests') && (
             <p className="mt-2 text-sm text-error font-body flex items-center">
               <Icon name="AlertCircle" size={16} className="mr-1" />
               {errors.theologicalInterests}
@@ -133,7 +138,7 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
           </label>
           <div className="space-y-3">
             {learningPaces.map((pace) => {
-              const isSelected = formData.learningPace === pace.value;
+              const isSelected = safeGet(formData, 'learningPace') === pace.value;
               return (
                 <div
                   key={pace.value}
@@ -165,7 +170,7 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
               );
             })}
           </div>
-          {errors.learningPace && (
+          {safeGet(errors, 'learningPace') && (
             <p className="mt-2 text-sm text-error font-body flex items-center">
               <Icon name="AlertCircle" size={16} className="mr-1" />
               {errors.learningPace}
@@ -179,7 +184,7 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
             Brief Introduction (Optional)
           </label>
           <textarea
-            value={formData.bio}
+            value={safeGet(formData, 'bio', '')}
             onChange={(e) => onFormChange('bio', e.target.value)}
             placeholder="Tell us a bit about yourself and your theological journey..."
             rows={4}
@@ -187,7 +192,7 @@ const ProfileDetailsStep = ({ formData, onFormChange, errors }) => {
             maxLength={500}
           />
           <div className="mt-1 text-xs text-text-muted font-caption text-right">
-            {(formData.bio || '').length}/500 characters
+            {(safeGet(formData, 'bio', '') || '').length}/500 characters
           </div>
         </div>
       </div>

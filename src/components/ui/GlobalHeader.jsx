@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
+import ThemeToggle from './ThemeToggle';
 
 const GlobalHeader = () => {
   const [user, setUser] = useState(null);
@@ -89,7 +90,7 @@ const GlobalHeader = () => {
   const Logo = () =>
   <Link to="/learner-dashboard" className="flex items-center space-x-3 hover:opacity-80 transition-contemplative">
       <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-soft-sm">
-        <Icon name="BookOpen" size={24} color="white" strokeWidth={2} />
+        <Icon name="Flame" size={24} color="white" strokeWidth={2} />
       </div>
       <div className="hidden sm:block">
         <h1 className="text-xl font-heading-semibold text-primary">Sons of The Prophets
@@ -109,6 +110,7 @@ const GlobalHeader = () => {
           <div className="flex justify-between items-center h-16">
             <Logo />
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               <Link to="/login">
                 <Button variant="ghost" size="sm">
                   Sign In
@@ -149,6 +151,9 @@ const GlobalHeader = () => {
                   className="pl-10 pr-4 py-2 w-64 bg-surface border border-subtle rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-color" />
 
               </div>
+
+              {/* Theme Toggle */}
+              <ThemeToggle />
 
               {/* Notifications */}
               <div className="relative">
@@ -323,6 +328,12 @@ const GlobalHeader = () => {
                 placeholder="Search..."
                 className="pl-10 pr-4 py-2 w-full bg-surface border border-subtle rounded-lg text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
 
+              </div>
+
+              {/* Mobile Theme Toggle */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-body text-text-primary">Theme</span>
+                <ThemeToggle />
               </div>
 
               {/* Mobile User Info */}

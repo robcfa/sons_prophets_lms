@@ -8,6 +8,7 @@ import RoleSelectionStep from './components/RoleSelectionStep';
 import ProfileDetailsStep from './components/ProfileDetailsStep';
 import TermsAndPrivacy from './components/TermsAndPrivacy';
 import SuccessMessage from './components/SuccessMessage';
+import { safeGet, safeObjectEntries } from '../../utils/safeObjectUtils';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -42,10 +43,10 @@ const Register = () => {
 
   useEffect(() => {
     // Clear errors when form data changes
-    if (Object.keys(errors).length > 0) {
+    if (safeObjectEntries(errors).length > 0) {
       setErrors({});
     }
-  }, [formData]);
+  }, [formData, errors]);
 
   const handleFormChange = (field, value) => {
     setFormData(prev => ({
@@ -59,23 +60,23 @@ const Register = () => {
 
     switch (step) {
       case 1:
-        if (!formData.fullName.trim()) {
+        if (!safeGet(formData, 'fullName', '').trim()) {
           newErrors.fullName = 'Full name is required';
         }
         
-        if (!formData.email.trim()) {
+        if (!safeGet(formData, 'email', '').trim()) {
           newErrors.email = 'Email address is required';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
           newErrors.email = 'Please enter a valid email address';
         }
         
-        if (!formData.password) {
+        if (!safeGet(formData, 'password', '')) {
           newErrors.password = 'Password is required';
         } else if (formData.password.length < 8) {
           newErrors.password = 'Password must be at least 8 characters long';
         }
         
-        if (!formData.confirmPassword) {
+        if (!safeGet(formData, 'confirmPassword', '')) {
           newErrors.confirmPassword = 'Please confirm your password';
         } else if (formData.password !== formData.confirmPassword) {
           newErrors.confirmPassword = 'Passwords do not match';
@@ -83,43 +84,44 @@ const Register = () => {
         break;
 
       case 2:
-        if (!formData.role) {
+        if (!safeGet(formData, 'role', '')) {
           newErrors.role = 'Please select your role';
         }
         break;
 
       case 3:
-        if (!formData.educationLevel) {
+        if (!safeGet(formData, 'educationLevel', '')) {
           newErrors.educationLevel = 'Please select your education level';
         }
         
-        if (!formData.theologicalInterests || formData.theologicalInterests.length < 2) {
+        const interests = safeGet(formData, 'theologicalInterests', []);
+        if (!Array.isArray(interests) || interests.length < 2) {
           newErrors.theologicalInterests = 'Please select at least 2 theological interests';
         }
         
-        if (!formData.learningPace) {
+        if (!safeGet(formData, 'learningPace', '')) {
           newErrors.learningPace = 'Please select your preferred learning pace';
         }
         break;
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return safeObjectEntries(newErrors).length === 0;
   };
 
   const validateTermsAndPrivacy = () => {
     const newErrors = {};
     
-    if (!formData.acceptTerms) {
+    if (!safeGet(formData, 'acceptTerms', false)) {
       newErrors.acceptTerms = 'You must accept the Terms of Service to continue';
     }
     
-    if (!formData.acceptPrivacy) {
+    if (!safeGet(formData, 'acceptPrivacy', false)) {
       newErrors.acceptPrivacy = 'You must accept the Privacy Policy to continue';
     }
     
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return safeObjectEntries(newErrors).length === 0;
   };
 
   const handleNext = () => {
@@ -160,26 +162,34 @@ const Register = () => {
   const isStepComplete = (step) => {
     switch (step) {
       case 1:
-        return formData.fullName && formData.email && formData.password && formData.confirmPassword;
+        return safeGet(formData, 'fullName', '') && 
+               safeGet(formData, 'email', '') && 
+               safeGet(formData, 'password', '') && 
+               safeGet(formData, 'confirmPassword', '');
       case 2:
-        return formData.role;
+        return safeGet(formData, 'role', '');
       case 3:
-        return formData.educationLevel && formData.theologicalInterests.length >= 2 && formData.learningPace;
+        const interests = safeGet(formData, 'theologicalInterests', []);
+        return safeGet(formData, 'educationLevel', '') && 
+               Array.isArray(interests) && interests.length >= 2 && 
+               safeGet(formData, 'learningPace', '');
       default:
         return false;
     }
   };
 
   const canProceed = isStepComplete(currentStep);
-  const canSubmit = canProceed && formData.acceptTerms && formData.acceptPrivacy;
+  const canSubmit = canProceed && 
+                   safeGet(formData, 'acceptTerms', false) && 
+                   safeGet(formData, 'acceptPrivacy', false);
 
   if (registrationComplete) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           <SuccessMessage 
-            userEmail={formData.email}
-            userRole={formData.role}
+            userEmail={safeGet(formData, 'email', '')}
+            userRole={safeGet(formData, 'role', '')}
           />
         </div>
       </div>
@@ -294,7 +304,7 @@ const Register = () => {
             </div>
 
             {/* Submit Error */}
-            {errors.submit && (
+            {safeGet(errors, 'submit') && (
               <div className="p-4 bg-error-50 border border-error-200 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <Icon name="AlertCircle" size={20} className="text-error flex-shrink-0" />

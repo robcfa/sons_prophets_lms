@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { safeGet } from '../../utils/safeObjectUtils';
 
 import CategoryFilter from './components/CategoryFilter';
 import SortingControls from './components/SortingControls';
-
 import NewDiscussionFAB from './components/NewDiscussionFAB';
 import AIDiscussionSpark from './components/AIDiscussionSpark';
 import TrendingTopics from './components/TrendingTopics';
@@ -74,6 +74,7 @@ const CommunityForum = () => {
           isBookmarked: true,
           isPinned: true,
           hasNewActivity: true,
+          topics: ['messiah', 'isaiah', 'prophecy'],
           recentReplies: [
             {
               author: "Dr. Michael Chen",
@@ -103,6 +104,7 @@ const CommunityForum = () => {
           isBookmarked: false,
           isPinned: false,
           hasNewActivity: false,
+          topics: ['ezekiel', 'vision', 'prayer'],
           recentReplies: [
             {
               author: "Rachel Thompson",
@@ -132,6 +134,7 @@ const CommunityForum = () => {
           isBookmarked: false,
           isPinned: false,
           hasNewActivity: true,
+          topics: ['daniel', 'prophecy', 'study-group'],
           recentReplies: [
             {
               author: "Emily Rodriguez",
@@ -161,6 +164,7 @@ const CommunityForum = () => {
           isBookmarked: true,
           isPinned: false,
           hasNewActivity: false,
+          topics: ['suffering', 'jeremiah', 'isaiah'],
           recentReplies: [
             {
               author: "Thomas Kim",
@@ -190,6 +194,7 @@ const CommunityForum = () => {
           isBookmarked: false,
           isPinned: false,
           hasNewActivity: true,
+          topics: ['symbolism', 'interpretation', 'beginner'],
           recentReplies: [
             {
               author: "Dr. Robert Chang",
@@ -236,6 +241,7 @@ const CommunityForum = () => {
           isBookmarked: false,
           isPinned: false,
           hasNewActivity: false,
+          topics: ['jeremiah', 'covenant', 'theology'],
           recentReplies: []
         }
       ];
@@ -257,29 +263,49 @@ const CommunityForum = () => {
 
     // Filter by category
     if (activeCategory !== 'all') {
-      filtered = filtered.filter(thread => thread.category === activeCategory);
+      filtered = filtered.filter(thread => safeGet(thread, 'category') === activeCategory);
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(thread =>
-        thread.title.toLowerCase().includes(query) ||
-        thread.excerpt.toLowerCase().includes(query) ||
-        thread.author.name.toLowerCase().includes(query)
-      );
+      filtered = filtered.filter(thread => {
+        const title = safeGet(thread, 'title', '').toLowerCase();
+        const excerpt = safeGet(thread, 'excerpt', '').toLowerCase();
+        const authorName = safeGet(thread, 'author.name', '').toLowerCase();
+        const topics = safeGet(thread, 'topics', []);
+        
+        return title.includes(query) || 
+               excerpt.includes(query) || 
+               authorName.includes(query) ||
+               (Array.isArray(topics) && topics.some(topic => 
+                 typeof topic === 'string' && topic.toLowerCase().includes(query)
+               ));
+      });
     }
 
     // Sort threads
     switch (sortBy) {
       case 'recent':
-        filtered.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+        filtered.sort((a, b) => {
+          const dateA = safeGet(a, 'lastActivity') ? new Date(a.lastActivity) : new Date(0);
+          const dateB = safeGet(b, 'lastActivity') ? new Date(b.lastActivity) : new Date(0);
+          return dateB - dateA;
+        });
         break;
       case 'popular':
-        filtered.sort((a, b) => b.upvotes - a.upvotes);
+        filtered.sort((a, b) => {
+          const upvotesA = safeGet(a, 'upvotes', 0);
+          const upvotesB = safeGet(b, 'upvotes', 0);
+          return upvotesB - upvotesA;
+        });
         break;
       case 'newest':
-        filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        filtered.sort((a, b) => {
+          const dateA = safeGet(a, 'createdAt') ? new Date(a.createdAt) : new Date(0);
+          const dateB = safeGet(b, 'createdAt') ? new Date(b.createdAt) : new Date(0);
+          return dateB - dateA;
+        });
         break;
       default:
         break;
@@ -294,7 +320,7 @@ const CommunityForum = () => {
       if (category.id === 'all') {
         counts[category.id] = threads.length;
       } else {
-        counts[category.id] = threads.filter(thread => thread.category === category.id).length;
+        counts[category.id] = threads.filter(thread => safeGet(thread, 'category') === category.id).length;
       }
     });
     return counts;
@@ -307,24 +333,28 @@ const CommunityForum = () => {
 
   const handleThreadAction = (action, threadId, data = null) => {
     setThreads(prev => prev.map(thread => {
-      if (thread.id === threadId) {
+      if (safeGet(thread, 'id') === threadId) {
         switch (action) {
           case 'upvote':
+            const isUpvoted = safeGet(thread, 'isUpvoted', false);
+            const upvotes = safeGet(thread, 'upvotes', 0);
             return {
               ...thread,
-              isUpvoted: !thread.isUpvoted,
-              upvotes: thread.isUpvoted ? thread.upvotes - 1 : thread.upvotes + 1
+              isUpvoted: !isUpvoted,
+              upvotes: isUpvoted ? upvotes - 1 : upvotes + 1
             };
           case 'bookmark':
             return {
               ...thread,
-              isBookmarked: !thread.isBookmarked
+              isBookmarked: !safeGet(thread, 'isBookmarked', false)
             };
           case 'share':
             // Handle share functionality
+            const title = safeGet(thread, 'title', '');
+            const excerpt = safeGet(thread, 'excerpt', '');
             navigator.share?.({
-              title: thread.title,
-              text: thread.excerpt,
+              title: title,
+              text: excerpt,
               url: window.location.origin + `/community-forum/thread/${threadId}`
             });
             return thread;
@@ -343,15 +373,15 @@ const CommunityForum = () => {
       
       const newThread = {
         id: Date.now(),
-        title: discussionData.title,
-        excerpt: discussionData.content.substring(0, 200) + '...',
+        title: safeGet(discussionData, 'title', 'New Discussion'),
+        excerpt: safeGet(discussionData, 'content', '').substring(0, 200) + '...',
         author: {
           name: "Current User",
           avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
           role: "Learner"
         },
-        category: discussionData.category,
-        categoryName: categories.find(c => c.id === discussionData.category)?.name || 'General Discussion',
+        category: safeGet(discussionData, 'category', 'general'),
+        categoryName: categories.find(c => c.id === safeGet(discussionData, 'category'))?.name || 'General Discussion',
         createdAt: new Date(),
         lastActivity: new Date(),
         replyCount: 0,
@@ -362,12 +392,13 @@ const CommunityForum = () => {
         isBookmarked: false,
         isPinned: false,
         hasNewActivity: false,
+        topics: [],
         recentReplies: []
       };
       
       setThreads(prev => [newThread, ...prev]);
       
-      if (discussionData.isAIGenerated) {
+      if (safeGet(discussionData, 'isAIGenerated')) {
         setShowAISpark(false);
         setTimeout(() => setShowAISpark(true), 30000); // Show again after 30 seconds
       }

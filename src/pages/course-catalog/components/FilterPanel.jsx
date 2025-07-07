@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import { safeObjectValues } from '../../../utils/safeObjectUtils';
 
 const FilterPanel = ({ 
   filters, 
@@ -87,7 +88,7 @@ const FilterPanel = ({
   };
 
   const getActiveFilterCount = () => {
-    return Object.values(localFilters).reduce((total, filterArray) => {
+    return safeObjectValues(localFilters || {}).reduce((total, filterArray) => {
       return total + (Array.isArray(filterArray) ? filterArray.length : 0);
     }, 0);
   };

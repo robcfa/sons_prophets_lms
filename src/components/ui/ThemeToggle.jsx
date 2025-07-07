@@ -13,8 +13,20 @@ const ThemeToggle = ({ className = '' }) => {
     setIsDarkMode(shouldUseDark);
     
     // Apply theme to document
-    document.documentElement.setAttribute('data-theme', shouldUseDark ? 'dark' : 'light');
+    applyTheme(shouldUseDark);
   }, []);
+
+  const applyTheme = (isDark) => {
+    const root = document.documentElement;
+    
+    if (isDark) {
+      root.setAttribute('data-theme', 'sons-prophets-dark');
+      root.classList.add('dark');
+    } else {
+      root.setAttribute('data-theme', 'sons-prophets-light');
+      root.classList.remove('dark');
+    }
+  };
 
   const toggleTheme = () => {
     const newTheme = isDarkMode ? 'light' : 'dark';
@@ -24,12 +36,7 @@ const ThemeToggle = ({ className = '' }) => {
     localStorage.setItem('theme', newTheme);
     
     // Apply theme to document
-    document.documentElement.setAttribute('data-theme', newTheme);
-    
-    // Update DaisyUI theme
-    document.documentElement.setAttribute('data-theme', 
-      newTheme === 'dark' ? 'sons-prophets-dark' : 'sons-prophets-light'
-    );
+    applyTheme(newTheme === 'dark');
   };
 
   return (
@@ -38,7 +45,7 @@ const ThemeToggle = ({ className = '' }) => {
       className={`
         relative inline-flex items-center justify-center
         w-10 h-10 rounded-lg
-        bg-card border border-default
+        bg-surface border border-subtle
         hover:bg-accent hover:border-accent
         transition-all duration-200 ease-in-out
         focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
