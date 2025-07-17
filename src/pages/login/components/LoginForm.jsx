@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Icon from '../../../components/AppIcon';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -14,12 +16,6 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock credentials for different user roles
-  const mockCredentials = {
-    learner: { email: 'learner@sonsprophets.com', password: 'learner123' },
-    coach: { email: 'coach@sonsprophets.com', password: 'coach123' },
-    admin: { email: 'admin@sonsprophets.com', password: 'admin123' }
-  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -66,45 +62,28 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await signIn(formData.email, formData.password);
 
-      // Check credentials and determine user role
-      let userRole = null;
-      let isValidCredentials = false;
-
-      Object.entries(mockCredentials).forEach(([role, credentials]) => {
-        if (formData.email === credentials.email && formData.password === credentials.password) {
-          userRole = role;
-          isValidCredentials = true;
-        }
-      });
-
-      if (isValidCredentials) {
-        // Store user session (in real app, this would be handled by auth context)
-        localStorage.setItem('userRole', userRole);
-        localStorage.setItem('userEmail', formData.email);
-        localStorage.setItem('isAuthenticated', 'true');
-        
-        if (formData.rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        }
-
-        // Navigate to appropriate dashboard based on role
-        switch (userRole) {
-          case 'learner': navigate('/learner-dashboard');
-            break;
-          case 'coach': navigate('/coach-dashboard');
-            break;
-          case 'admin': navigate('/admin-content-management');
-            break;
-          default:
-            navigate('/learner-dashboard');
-        }
-      } else {
+      if (!result?.success) {
         setErrors({
-          general: 'Invalid email or password. Please check your credentials and try again.'
+          general: result?.error || 'Invalid email or password. Please try again.'
         });
+        return;
+      }
+
+      const metadata = result.data?.user?.user_metadata ||
+        result.data?.session?.user?.user_metadata || {};
+      const role = metadata.role || 'learner';
+
+      switch (role) {
+        case 'coach':
+          navigate('/coach-dashboard');
+          break;
+        case 'admin':
+          navigate('/admin-content-management');
+          break;
+        default:
+          navigate('/learner-dashboard');
       }
     } catch (error) {
       setErrors({
@@ -217,13 +196,13 @@ const LoginForm = () => {
         {isLoading ? 'Signing In...' : 'Sign In'}
       </Button>
 
-      {/* Mock Credentials Helper */}
+      {/* Demo Credentials Helper */}
       <div className="mt-6 p-4 bg-accent-50 border border-accent-200 rounded-lg">
         <p className="text-xs font-caption text-accent-700 mb-2 font-body-semibold">Demo Credentials:</p>
         <div className="space-y-1 text-xs font-data">
-          <p className="text-accent-600">Learner: learner@sonsprophets.com / learner123</p>
-          <p className="text-accent-600">Coach: coach@sonsprophets.com / coach123</p>
-          <p className="text-accent-600">Admin: admin@sonsprophets.com / admin123</p>
+          <p className="text-accent-600">Member: member.john@sonsprophets.org / password123</p>
+          <p className="text-accent-600">Coach: coach.david@sonsprophets.org / password123</p>
+          <p className="text-accent-600">Admin: admin@sonsprophets.org / password123</p>
         </div>
       </div>
     </form>

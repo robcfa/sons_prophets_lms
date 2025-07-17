@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import LoginHeader from './components/LoginHeader';
 import LoginForm from './components/LoginForm';
 import SocialLogin from './components/SocialLogin';
@@ -7,26 +8,22 @@ import LoginFooter from './components/LoginFooter';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { user, userProfile, loading } = useAuth();
 
   useEffect(() => {
-    // Check if user is already authenticated
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    const userRole = localStorage.getItem('userRole');
-
-    if (isAuthenticated === 'true' && userRole) {
-      // Redirect to appropriate dashboard based on role
-      switch (userRole) {
-        case 'learner': navigate('/learner-dashboard');
+    if (!loading && user && userProfile) {
+      switch (userProfile.role) {
+        case 'coach':
+          navigate('/coach-dashboard');
           break;
-        case 'coach': navigate('/coach-dashboard');
-          break;
-        case 'admin': navigate('/admin-content-management');
+        case 'admin':
+          navigate('/admin-content-management');
           break;
         default:
           navigate('/learner-dashboard');
       }
     }
-  }, [navigate]);
+  }, [user, userProfile, loading, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-background to-accent-50">
