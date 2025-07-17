@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
 import ProgressIndicator from './components/ProgressIndicator';
@@ -12,6 +13,7 @@ import { safeGet, safeObjectEntries } from '../../utils/safeObjectUtils';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationComplete, setRegistrationComplete] = useState(false);
@@ -136,7 +138,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateStep(currentStep) || !validateTermsAndPrivacy()) {
       return;
     }
@@ -144,13 +146,17 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock registration success
-      console.log('Registration data:', formData);
-      setRegistrationComplete(true);
-      
+      const result = await signUp(formData.email, formData.password, {
+        full_name: formData.fullName,
+        role: formData.role || 'member',
+        plan: 'free'
+      });
+
+      if (!result?.success) {
+        setErrors({ submit: result?.error || 'Registration failed. Please try again.' });
+      } else {
+        setRegistrationComplete(true);
+      }
     } catch (error) {
       console.error('Registration failed:', error);
       setErrors({ submit: 'Registration failed. Please try again.' });
