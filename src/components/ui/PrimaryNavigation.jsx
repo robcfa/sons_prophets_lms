@@ -1,19 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../AppIcon';
 
 const PrimaryNavigation = () => {
-  const [user, setUser] = useState(null);
+  const { user, userProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('');
   const location = useLocation();
 
-  useEffect(() => {
-    // Simulate user role detection
-    const mockUser = {
-      role: 'learner' // This would come from authentication context
-    };
-    setUser(mockUser);
-  }, []);
+  // Memoize user role to prevent unnecessary re-renders
+  const userRole = useMemo(() => {
+    return user?.role || userProfile?.role || localStorage.getItem('userRole') || 'learner';
+  }, [user?.role, userProfile?.role]);
 
   useEffect(() => {
     // Set active tab based on current route
@@ -31,7 +29,8 @@ const PrimaryNavigation = () => {
     }
   }, [location.pathname]);
 
-  const getNavigationItems = (userRole) => {
+  // Memoize navigation items to prevent recalculation on every render
+  const navigationItems = useMemo(() => {
     const baseItems = [
       {
         id: 'dashboard',
@@ -75,32 +74,29 @@ const PrimaryNavigation = () => {
       }
     ];
 
-    return baseItems.filter(item => item.roles.includes(userRole));
-  };
+    return baseItems.filter((item) => item.roles.includes(userRole));
+  }, [userRole]);
 
-  if (!user) {
+  // Don't render if no user authentication
+  if (!user && !userProfile && !localStorage.getItem('isAuthenticated')) {
     return null;
   }
 
-  const navigationItems = getNavigationItems(user.role);
-
-  const NavItem = ({ item, isActive, isMobile = false }) => {
+  const NavItem = React.memo(({ item, isActive, isMobile = false }) => {
     const baseClasses = `
       flex items-center justify-center px-4 py-3 rounded-lg font-body font-body-normal text-sm
-      transition-color hover:bg-primary-50 hover:text-primary
-      ${isActive 
-        ? 'bg-primary text-primary-foreground shadow-soft-sm' 
-        : 'text-text-secondary hover:text-primary'
-      }
+      transition-colors duration-200 hover:bg-primary-50 hover:text-primary
+      ${isActive ?
+        'bg-primary text-primary-foreground shadow-soft-sm' :
+        'text-text-secondary hover:text-primary'}
     `;
 
     const mobileClasses = `
       flex flex-col items-center justify-center px-2 py-2 rounded-lg font-caption text-xs
-      transition-color hover:bg-primary-50 hover:text-primary min-h-[60px]
-      ${isActive 
-        ? 'bg-primary text-primary-foreground shadow-soft-sm' 
-        : 'text-text-secondary hover:text-primary'
-      }
+      transition-colors duration-200 hover:bg-primary-50 hover:text-primary min-h-[60px]
+      ${isActive ?
+        'bg-primary text-primary-foreground shadow-soft-sm' :
+        'text-text-secondary hover:text-primary'}
     `;
 
     return (
@@ -109,17 +105,19 @@ const PrimaryNavigation = () => {
         className={isMobile ? mobileClasses : baseClasses}
         title={item.label}
       >
-        <Icon 
-          name={item.icon} 
-          size={isMobile ? 20 : 18} 
-          className={isMobile ? 'mb-1' : 'mr-2'} 
+        <Icon
+          name={item.icon}
+          size={isMobile ? 20 : 18}
+          className={isMobile ? 'mb-1' : 'mr-2'}
         />
         <span className={isMobile ? 'text-center leading-tight' : ''}>
           {item.label}
         </span>
       </Link>
     );
-  };
+  });
+
+  NavItem.displayName = 'NavItem';
 
   return (
     <>
@@ -141,13 +139,13 @@ const PrimaryNavigation = () => {
             <div className="flex items-center space-x-2">
               <Link
                 to="/course-player"
-                className="flex items-center px-3 py-2 text-sm font-body text-accent hover:text-accent-600 transition-color"
+                className="flex items-center px-3 py-2 text-sm font-body text-accent hover:text-accent-600 transition-colors duration-200"
               >
                 <Icon name="Play" size={16} className="mr-1" />
                 Continue Learning
               </Link>
               
-              {user.role === 'learner' && (
+              {userRole === 'learner' && (
                 <div className="flex items-center px-3 py-2 bg-accent-50 rounded-lg">
                   <Icon name="Zap" size={16} className="text-accent mr-2" />
                   <span className="text-sm font-data text-accent-700">1,250 XP</span>

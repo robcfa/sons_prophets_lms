@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Icon from '../../../components/AppIcon';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -13,13 +15,6 @@ const LoginForm = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-
-  // Mock credentials for different user roles
-  const mockCredentials = {
-    learner: { email: 'learner@sonsprophets.com', password: 'learner123' },
-    coach: { email: 'coach@sonsprophets.com', password: 'coach123' },
-    admin: { email: 'admin@sonsprophets.com', password: 'admin123' }
-  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -64,33 +59,19 @@ const LoginForm = () => {
     }
 
     setIsLoading(true);
+    setErrors({});
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await signIn(formData.email, formData.password);
 
-      // Check credentials and determine user role
-      let userRole = null;
-      let isValidCredentials = false;
-
-      Object.entries(mockCredentials).forEach(([role, credentials]) => {
-        if (formData.email === credentials.email && formData.password === credentials.password) {
-          userRole = role;
-          isValidCredentials = true;
-        }
-      });
-
-      if (isValidCredentials) {
-        // Store user session (in real app, this would be handled by auth context)
-        localStorage.setItem('userRole', userRole);
-        localStorage.setItem('userEmail', formData.email);
-        localStorage.setItem('isAuthenticated', 'true');
-        
+      if (result.success) {
+        // Store remember me preference
         if (formData.rememberMe) {
           localStorage.setItem('rememberMe', 'true');
         }
 
         // Navigate to appropriate dashboard based on role
+        const userRole = localStorage.getItem('userRole');
         switch (userRole) {
           case 'learner': navigate('/learner-dashboard');
             break;
@@ -103,7 +84,7 @@ const LoginForm = () => {
         }
       } else {
         setErrors({
-          general: 'Invalid email or password. Please check your credentials and try again.'
+          general: result.error || 'Invalid email or password. Please check your credentials and try again.'
         });
       }
     } catch (error) {

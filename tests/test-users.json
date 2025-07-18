@@ -1,0 +1,42 @@
+[
+    {
+        "email": "test1@example.com",
+        "password": "testpass123"
+    },
+    {
+        "email": "test2@example.com",
+        "password": "testpass123"
+    },
+    {
+        "email": "test3@example.com",
+        "password": "testpass123"
+    },
+    {
+        "email": "test4@example.com",
+        "password": "testpass123"
+    },
+    {
+        "email": "test5@example.com",
+        "password": "testpass123"
+    },
+    {
+        "email": "coach1@example.com",
+        "password": "coachpass123"
+    },
+    {
+        "email": "coach2@example.com",
+        "password": "coachpass123"
+    },
+    {
+        "email": "admin1@example.com",
+        "password": "adminpass123"
+    },
+    {
+        "email": "learner1@example.com",
+        "password": "learnerpass123"
+    },
+    {
+        "email": "learner2@example.com",
+        "password": "learnerpass123"
+    }
+]

@@ -1,76 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import React from 'react';
+import { Sun, Moon, Scroll } from 'lucide-react';
+import { useTheme } from '../../lib/theme-context';
 
 const ThemeToggle = ({ className = '' }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { theme, setTheme } = useTheme();
 
-  useEffect(() => {
-    // Check for saved theme preference or default to light mode
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    const shouldUseDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-    setIsDarkMode(shouldUseDark);
-    
-    // Apply theme to document
-    applyTheme(shouldUseDark);
-  }, []);
-
-  const applyTheme = (isDark) => {
-    const root = document.documentElement;
-    
-    if (isDark) {
-      root.setAttribute('data-theme', 'sons-prophets-dark');
-      root.classList.add('dark');
-    } else {
-      root.setAttribute('data-theme', 'sons-prophets-light');
-      root.classList.remove('dark');
-    }
-  };
-
-  const toggleTheme = () => {
-    const newTheme = isDarkMode ? 'light' : 'dark';
-    setIsDarkMode(!isDarkMode);
-    
-    // Save preference to localStorage
-    localStorage.setItem('theme', newTheme);
-    
-    // Apply theme to document
-    applyTheme(newTheme === 'dark');
+  const handleThemeChange = (e) => {
+    setTheme(e.target.value);
   };
 
   return (
-    <button
-      onClick={toggleTheme}
-      className={`
-        relative inline-flex items-center justify-center
-        w-10 h-10 rounded-lg
-        bg-surface border border-subtle
-        hover:bg-accent hover:border-accent
-        transition-all duration-200 ease-in-out
-        focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-        ${className}
-      `}
-      aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      <div className="relative w-5 h-5">
-        <Sun 
-          className={`
-            absolute inset-0 w-5 h-5 text-current
-            transition-all duration-300 ease-in-out
-            ${isDarkMode ? 'opacity-0 rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'}
-          `}
-        />
-        <Moon 
-          className={`
-            absolute inset-0 w-5 h-5 text-current
-            transition-all duration-300 ease-in-out
-            ${isDarkMode ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-0'}
-          `}
-        />
+    <div className={`theme-toggle-container ${className}`}>
+      <select
+        value={theme}
+        onChange={handleThemeChange}
+        className="bg-surface text-on-surface dark:bg-surface-dark dark:text-on-surface-dark reverent:bg-rev-surface reverent:text-rev-on-surface border border-divider dark:border-divider-dark reverent:border-rev-border rounded-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+        aria-label="Select theme"
+      >
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="reverent">Reverent</option>
+      </select>
+      
+      <div className="theme-icon ml-2">
+        {theme === 'light' && <Sun className="w-4 h-4 text-on-surface" />}
+        {theme === 'dark' && <Moon className="w-4 h-4 text-on-surface-dark" />}
+        {theme === 'reverent' && <Scroll className="w-4 h-4 text-rev-on-surface" />}
       </div>
-    </button>
+    </div>
   );
 };
 

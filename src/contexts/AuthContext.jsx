@@ -19,23 +19,46 @@ export function AuthProvider({ children }) {
         setLoading(true);
         setAuthError(null);
 
-        const sessionResult = await authService.getSession();
+        // Check localStorage for existing session (mock authentication)
+        const isAuthenticated = localStorage.getItem('isAuthenticated');
+        const userRole = localStorage.getItem('userRole');
+        const userEmail = localStorage.getItem('userEmail');
 
-        if (
-          sessionResult?.success &&
-          safeGet(sessionResult, 'data.session.user') &&
-          isMounted
-        ) {
-          const authUser = sessionResult.data.session.user;
-          setUser(authUser);
+        if (isAuthenticated === 'true' && userRole && userEmail && isMounted) {
+          // Create mock user object
+          const mockUser = {
+            id: `user_${userRole}_${Date.now()}`,
+            email: userEmail,
+            role: userRole,
+            name: userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1)
+          };
 
-          // Fetch user profile
-          const profileResult = await authService.getUserProfile(authUser.id);
+          setUser(mockUser);
+          setUserProfile({
+            id: mockUser.id,
+            email: mockUser.email,
+            role: mockUser.role,
+            name: mockUser.name,
+            created_at: new Date().toISOString()
+          });
+        } else {
+          // Try Supabase authentication as fallback
+          const sessionResult = await authService.getSession();
 
-          if (profileResult?.success && profileResult?.data && isMounted) {
-            setUserProfile(profileResult.data);
-          } else if (isMounted) {
-            setAuthError(profileResult?.error || "Failed to load user profile");
+          if (
+            sessionResult?.success &&
+            safeGet(sessionResult, 'data.session.user') &&
+            isMounted
+          ) {
+            const authUser = sessionResult.data.session.user;
+            setUser(authUser);
+
+            // Fetch user profile
+            const profileResult = await authService.getUserProfile(authUser.id);
+
+            if (profileResult?.success && profileResult?.data && isMounted) {
+              setUserProfile(profileResult.data);
+            }
           }
         }
       } catch (error) {
@@ -74,6 +97,11 @@ export function AuthProvider({ children }) {
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         setUserProfile(null);
+        // Clear localStorage on sign out
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('rememberMe');
       } else if (event === "TOKEN_REFRESHED" && safeGet(session, 'user')) {
         setUser(session.user);
       }
@@ -85,18 +113,64 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Sign in function
+  // Sign in function - supports both mock and Supabase authentication
   const signIn = async (email, password) => {
     try {
       setAuthError(null);
-      const result = await authService.signIn(email, password);
+      
+      // Mock credentials for different user roles
+      const mockCredentials = {
+        learner: { email: 'learner@sonsprophets.com', password: 'learner123' },
+        coach: { email: 'coach@sonsprophets.com', password: 'coach123' },
+        admin: { email: 'admin@sonsprophets.com', password: 'admin123' }
+      };
 
-      if (!result?.success) {
-        setAuthError(result?.error || "Login failed");
-        return { success: false, error: result?.error };
+      // Check mock credentials first
+      let userRole = null;
+      let isValidCredentials = false;
+
+      Object.entries(mockCredentials).forEach(([role, credentials]) => {
+        if (email === credentials.email && password === credentials.password) {
+          userRole = role;
+          isValidCredentials = true;
+        }
+      });
+
+      if (isValidCredentials) {
+        // Mock authentication success
+        const mockUser = {
+          id: `user_${userRole}_${Date.now()}`,
+          email: email,
+          role: userRole,
+          name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1)
+        };
+
+        setUser(mockUser);
+        setUserProfile({
+          id: mockUser.id,
+          email: mockUser.email,
+          role: mockUser.role,
+          name: mockUser.name,
+          created_at: new Date().toISOString()
+        });
+
+        // Store in localStorage
+        localStorage.setItem('userRole', userRole);
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('isAuthenticated', 'true');
+
+        return { success: true, data: { user: mockUser } };
+      } else {
+        // Try Supabase authentication as fallback
+        const result = await authService.signIn(email, password);
+
+        if (!result?.success) {
+          setAuthError(result?.error || "Invalid email or password");
+          return { success: false, error: result?.error || "Invalid email or password" };
+        }
+
+        return { success: true, data: result.data };
       }
-
-      return { success: true, data: result.data };
     } catch (error) {
       const errorMsg = "Something went wrong during login. Please try again.";
       setAuthError(errorMsg);
@@ -129,12 +203,19 @@ export function AuthProvider({ children }) {
   const signOut = async () => {
     try {
       setAuthError(null);
-      const result = await authService.signOut();
+      
+      // Clear localStorage first
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('rememberMe');
+      
+      // Clear state
+      setUser(null);
+      setUserProfile(null);
 
-      if (!result?.success) {
-        setAuthError(result?.error || "Logout failed");
-        return { success: false, error: result?.error };
-      }
+      // Try Supabase sign out as well
+      await authService.signOut();
 
       return { success: true };
     } catch (error) {

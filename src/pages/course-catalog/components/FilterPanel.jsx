@@ -42,10 +42,10 @@ const FilterPanel = ({
       title: 'Instructors',
       icon: 'User',
       options: [
-        { value: 'dr-sarah-johnson', label: 'Dr. Sarah Johnson', count: courseStats.instructors.drSarahJohnson || 0 },
-        { value: 'prof-michael-chen', label: 'Prof. Michael Chen', count: courseStats.instructors.profMichaelChen || 0 },
-        { value: 'dr-david-williams', label: 'Dr. David Williams', count: courseStats.instructors.drDavidWilliams || 0 },
-        { value: 'rev-mary-thompson', label: 'Rev. Mary Thompson', count: courseStats.instructors.revMaryThompson || 0 }
+        { value: 'dr-sarah-johnson', label: 'Dr. Sarah Johnson', count: safeGet(courseStats, 'instructors.drSarahJohnson', 0) },
+        { value: 'prof-michael-chen', label: 'Prof. Michael Chen', count: safeGet(courseStats, 'instructors.profMichaelChen', 0) },
+        { value: 'dr-david-williams', label: 'Dr. David Williams', count: safeGet(courseStats, 'instructors.drDavidWilliams', 0) },
+        { value: 'rev-mary-thompson', label: 'Rev. Mary Thompson', count: safeGet(courseStats, 'instructors.revMaryThompson', 0) }
       ]
     },
     {
@@ -53,9 +53,9 @@ const FilterPanel = ({
       title: 'Course Duration',
       icon: 'Clock',
       options: [
-        { value: 'short', label: 'Short (< 2 hours)', count: courseStats.duration.short || 0 },
-        { value: 'medium', label: 'Medium (2-8 hours)', count: courseStats.duration.medium || 0 },
-        { value: 'long', label: 'Long (8+ hours)', count: courseStats.duration.long || 0 }
+        { value: 'short', label: 'Short (< 2 hours)', count: safeGet(courseStats, 'duration.short', 0) },
+        { value: 'medium', label: 'Medium (2-8 hours)', count: safeGet(courseStats, 'duration.medium', 0) },
+        { value: 'long', label: 'Long (8+ hours)', count: safeGet(courseStats, 'duration.long', 0) }
       ]
     }
   ];

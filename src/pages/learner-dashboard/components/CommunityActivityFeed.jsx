@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { safeGet, safeArray } from '../../../utils/safeObjectUtils';
 
 const CommunityActivityFeed = () => {
   const [activities, setActivities] = useState([]);
@@ -93,22 +94,32 @@ const CommunityActivityFeed = () => {
         }
       ];
       
-      setActivities(prev => [...prev, ...additionalActivities]);
+      setActivities(prev => [...safeArray(prev), ...additionalActivities]);
       setLoading(false);
       setHasMore(false);
     }, 1000);
   };
 
   const formatTimeAgo = (date) => {
-    const now = new Date();
-    const diff = now - date;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (hours < 24) {
-      return `${hours}h ago`;
-    } else {
-      return `${days}d ago`;
+    try {
+      if (!date) return 'Unknown time';
+      
+      const dateObj = date instanceof Date ? date : new Date(date);
+      if (isNaN(dateObj.getTime())) return 'Unknown time';
+      
+      const now = new Date();
+      const diff = now - dateObj;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      
+      if (hours < 24) {
+        return `${hours}h ago`;
+      } else {
+        return `${days}d ago`;
+      }
+    } catch (error) {
+      console.warn('Error formatting time ago:', error);
+      return 'Unknown time';
     }
   };
 
@@ -134,6 +145,12 @@ const CommunityActivityFeed = () => {
     return colorMap[type] || 'text-text-secondary';
   };
 
+  // Enhanced safe activities handling
+  const safeActivities = React.useMemo(() => {
+    const activitiesArray = safeArray(activities);
+    return activitiesArray.filter(activity => activity && typeof activity === 'object');
+  }, [activities]);
+
   return (
     <div className="bg-card rounded-xl shadow-soft-md border border-subtle p-6">
       <div className="flex items-center justify-between mb-6">
@@ -149,82 +166,99 @@ const CommunityActivityFeed = () => {
       </div>
 
       <div className="space-y-4 max-h-96 overflow-y-auto">
-        {activities.map((activity) => (
-          <div key={activity.id} className="border-l-4 border-primary-100 pl-4 pb-4">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-surface">
-                  <img
-                    src={activity.authorAvatar}
-                    alt={activity.author}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = '/assets/images/no_image.png';
-                    }}
-                  />
+        {safeActivities.map((activity, index) => {
+          // Safe activity data access
+          const activityId = safeGet(activity, 'id') || `activity-${index}`;
+          const activityType = safeGet(activity, 'type') || 'discussion';
+          const activityTitle = safeGet(activity, 'title') || 'Untitled Activity';
+          const activityAuthor = safeGet(activity, 'author') || 'Unknown Author';
+          const activityAuthorAvatar = safeGet(activity, 'authorAvatar');
+          const activityContent = safeGet(activity, 'content') || '';
+          const activityTimestamp = safeGet(activity, 'timestamp');
+          const activityCategory = safeGet(activity, 'category') || 'General';
+          const activityReplies = safeGet(activity, 'replies');
+          const activityLikes = safeGet(activity, 'likes');
+          const activityAttendees = safeGet(activity, 'attendees');
+          const activityMaxAttendees = safeGet(activity, 'maxAttendees');
+          const activityCourseRating = safeGet(activity, 'courseRating');
+          
+          return (
+            <div key={activityId} className="border-l-4 border-primary-100 pl-4 pb-4">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-surface">
+                    <img
+                      src={activityAuthorAvatar || '/assets/images/no_image.png'}
+                      alt={activityAuthor}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = '/assets/images/no_image.png';
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Icon 
-                    name={getActivityIcon(activity.type)} 
-                    size={16} 
-                    className={getActivityColor(activity.type)} 
-                  />
-                  <span className="text-xs font-caption text-text-muted bg-surface px-2 py-1 rounded-full">
-                    {activity.category}
-                  </span>
-                  <span className="text-xs font-caption text-text-muted">
-                    {formatTimeAgo(activity.timestamp)}
-                  </span>
-                </div>
                 
-                <h3 className="font-body font-body-semibold text-text-primary mb-1">
-                  {activity.title}
-                </h3>
-                
-                <p className="text-sm font-body text-text-secondary mb-2 line-clamp-2">
-                  {activity.content}
-                </p>
-                
-                <div className="flex items-center space-x-4 text-xs font-caption text-text-muted">
-                  <span className="font-body-semibold text-text-secondary">
-                    {activity.author}
-                  </span>
-                  
-                  {activity.replies && (
-                    <span className="flex items-center">
-                      <Icon name="MessageCircle" size={12} className="mr-1" />
-                      {activity.replies} replies
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Icon 
+                      name={getActivityIcon(activityType)} 
+                      size={16} 
+                      className={getActivityColor(activityType)} 
+                    />
+                    <span className="text-xs font-caption text-text-muted bg-surface px-2 py-1 rounded-full">
+                      {activityCategory}
                     </span>
-                  )}
-                  
-                  {activity.likes && (
-                    <span className="flex items-center">
-                      <Icon name="Heart" size={12} className="mr-1" />
-                      {activity.likes} likes
+                    <span className="text-xs font-caption text-text-muted">
+                      {formatTimeAgo(activityTimestamp)}
                     </span>
-                  )}
+                  </div>
                   
-                  {activity.attendees && (
-                    <span className="flex items-center">
-                      <Icon name="Users" size={12} className="mr-1" />
-                      {activity.attendees}/{activity.maxAttendees} attending
-                    </span>
-                  )}
+                  <h3 className="font-body font-body-semibold text-text-primary mb-1">
+                    {activityTitle}
+                  </h3>
                   
-                  {activity.courseRating && (
-                    <span className="flex items-center">
-                      <Icon name="Star" size={12} className="mr-1 text-warning" />
-                      {activity.courseRating}/5 rating
+                  <p className="text-sm font-body text-text-secondary mb-2 line-clamp-2">
+                    {activityContent}
+                  </p>
+                  
+                  <div className="flex items-center space-x-4 text-xs font-caption text-text-muted">
+                    <span className="font-body-semibold text-text-secondary">
+                      {activityAuthor}
                     </span>
-                  )}
+                    
+                    {activityReplies && (
+                      <span className="flex items-center">
+                        <Icon name="MessageCircle" size={12} className="mr-1" />
+                        {activityReplies} replies
+                      </span>
+                    )}
+                    
+                    {activityLikes && (
+                      <span className="flex items-center">
+                        <Icon name="Heart" size={12} className="mr-1" />
+                        {activityLikes} likes
+                      </span>
+                    )}
+                    
+                    {activityAttendees && activityMaxAttendees && (
+                      <span className="flex items-center">
+                        <Icon name="Users" size={12} className="mr-1" />
+                        {activityAttendees}/{activityMaxAttendees} attending
+                      </span>
+                    )}
+                    
+                    {activityCourseRating && (
+                      <span className="flex items-center">
+                        <Icon name="Star" size={12} className="mr-1 text-warning" />
+                        {activityCourseRating}/5 rating
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {hasMore && (

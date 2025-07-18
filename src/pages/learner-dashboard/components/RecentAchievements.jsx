@@ -1,15 +1,27 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Icon from '../../../components/AppIcon';
+import { safeGet } from '../../../utils/safeObjectUtils';
 
 const RecentAchievements = ({ achievements = [] }) => {
   const formatDate = (date) => {
-    if (!date || !(date instanceof Date)) {
+    try {
+      if (!date) {
+        return 'Unknown date';
+      }
+      
+      const dateObj = date instanceof Date ? date : new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        return 'Unknown date';
+      }
+      
+      return dateObj.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      console.warn('Error formatting date:', error);
       return 'Unknown date';
     }
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
-    });
   };
 
   const getBadgeColor = (type) => {
@@ -34,8 +46,14 @@ const RecentAchievements = ({ achievements = [] }) => {
     return iconMap[type] || 'Award';
   };
 
-  // Ensure achievements is always an array
-  const safeAchievements = Array.isArray(achievements) ? achievements : [];
+  // Ensure achievements is always an array with enhanced safety
+  const safeAchievements = React.useMemo(() => {
+    if (!Array.isArray(achievements)) {
+      return [];
+    }
+    
+    return achievements.filter(achievement => achievement && typeof achievement === 'object');
+  }, [achievements]);
 
   return (
     <div className="bg-card rounded-xl shadow-soft-md border border-subtle p-6">
@@ -52,50 +70,61 @@ const RecentAchievements = ({ achievements = [] }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {safeAchievements.map((achievement) => (
-          <div 
-            key={achievement?.id || Math.random()} 
-            className="group relative bg-surface rounded-lg p-4 hover:shadow-soft-sm transition-all duration-200 cursor-pointer"
-          >
-            <div className="flex items-start space-x-3">
-              <div className={`flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br ${getBadgeColor(achievement?.type)} flex items-center justify-center shadow-soft-sm group-hover:scale-110 transition-transform duration-200`}>
-                <Icon 
-                  name={getBadgeIcon(achievement?.type)} 
-                  size={20} 
-                  className="text-white" 
-                />
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <h3 className="font-body font-body-semibold text-text-primary mb-1 group-hover:text-primary transition-color">
-                  {achievement?.name || 'Unnamed Achievement'}
-                </h3>
-                <p className="text-sm font-body text-text-secondary mb-2 line-clamp-2">
-                  {achievement?.description || 'No description available'}
-                </p>
+        {safeAchievements.map((achievement, index) => {
+          // Safe achievement data access
+          const achievementId = safeGet(achievement, 'id') || `achievement-${index}`;
+          const achievementName = safeGet(achievement, 'name') || 'Unnamed Achievement';
+          const achievementDescription = safeGet(achievement, 'description') || 'No description available';
+          const achievementType = safeGet(achievement, 'type') || 'milestone';
+          const achievementEarnedDate = safeGet(achievement, 'earnedDate');
+          const achievementXpReward = safeGet(achievement, 'xpReward') || 0;
+          const achievementIsNew = safeGet(achievement, 'isNew') || false;
+          
+          return (
+            <div 
+              key={achievementId}
+              className="group relative bg-surface rounded-lg p-4 hover:shadow-soft-sm transition-all duration-200 cursor-pointer"
+            >
+              <div className="flex items-start space-x-3">
+                <div className={`flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br ${getBadgeColor(achievementType)} flex items-center justify-center shadow-soft-sm group-hover:scale-110 transition-transform duration-200`}>
+                  <Icon 
+                    name={getBadgeIcon(achievementType)} 
+                    size={20} 
+                    className="text-white" 
+                  />
+                </div>
                 
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-caption text-text-muted">
-                    Earned {formatDate(achievement?.earnedDate)}
-                  </span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-body font-body-semibold text-text-primary mb-1 group-hover:text-primary transition-color">
+                    {achievementName}
+                  </h3>
+                  <p className="text-sm font-body text-text-secondary mb-2 line-clamp-2">
+                    {achievementDescription}
+                  </p>
                   
-                  <div className="flex items-center space-x-1">
-                    <Icon name="Zap" size={12} className="text-accent" />
-                    <span className="text-xs font-data text-accent font-bold">
-                      +{achievement?.xpReward || 0} XP
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-caption text-text-muted">
+                      Earned {formatDate(achievementEarnedDate)}
                     </span>
+                    
+                    <div className="flex items-center space-x-1">
+                      <Icon name="Zap" size={12} className="text-accent" />
+                      <span className="text-xs font-data text-accent font-bold">
+                        +{achievementXpReward} XP
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
+              
+              {achievementIsNew && (
+                <div className="absolute -top-2 -right-2 bg-error text-white text-xs font-caption px-2 py-1 rounded-full shadow-soft-sm">
+                  New!
+                </div>
+              )}
             </div>
-            
-            {achievement?.isNew && (
-              <div className="absolute -top-2 -right-2 bg-error text-white text-xs font-caption px-2 py-1 rounded-full shadow-soft-sm">
-                New!
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {safeAchievements.length === 0 && (

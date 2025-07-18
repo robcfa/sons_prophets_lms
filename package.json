@@ -9,7 +9,10 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "preview": "vite preview",
     "serve": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test:load": "k6 run tests/auth-load-test.js",
+    "test:lighthouse": "lhci autorun --config=lighthouse-auth-config.js",
+    "test:perf": "npm run test:load && npm run test:lighthouse"
   },
   "dependencies": {
     "@dhiwise/component-tagger": "^1.0.9",
@@ -25,6 +28,7 @@
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.484.0",
     "postcss-import": "^16.1.0",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
@@ -46,6 +50,8 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "k6": "^0.0.0",
+    "@lhci/cli": "^0.13.0",
     "postcss": "^8.4.24",
     "tailwindcss": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",

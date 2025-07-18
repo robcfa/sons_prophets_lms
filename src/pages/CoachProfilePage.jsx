@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-
+import { safeGet } from '../utils/safeObjectUtils';
 
 function CoachProfilePage({ profile = {} }) {
-  const bio = profile?.drSarahJohnson?.bio ?? 'Bio not available';
+  // Use safeGet instead of unsafe property access
+  const bio = safeGet(profile, 'drSarahJohnson.bio', 'Bio not available');
   
   return (
     <div className="container mx-auto px-4 py-8">

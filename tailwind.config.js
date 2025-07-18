@@ -4,13 +4,36 @@ module.exports = {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: ["class", '[data-theme="dark"]'],
+  darkMode: ["class"],
   theme: {
     extend: {
       spacing: {
-        gold: '1.618rem'
+        gold: '1.618rem',
+        // Map to CSS variables
+        '4': 'var(--spacing-4)',
+        '8': 'var(--spacing-8)',
+        '16': 'var(--spacing-16)',
+        '24': 'var(--spacing-24)',
+        '32': 'var(--spacing-32)',
       },
       colors: {
+        // Map to CSS variables
+        'bg': 'var(--color-bg)',
+        'surface': 'var(--color-surface)',
+        'surface-dark': 'var(--color-surface-dark)',
+        'on-surface': 'var(--color-on-surface)',
+        'on-surface-dark': 'var(--color-on-surface-dark)',
+        'on-surface-dark-secondary': 'var(--color-on-surface-dark-secondary)',
+        'primary-dark': 'var(--color-primary-dark)',
+        'primary-dark-hover': 'var(--color-primary-dark-hover)',
+        'border-dark': 'var(--color-border-dark)',
+        
+        // Reverent colors
+        'rev-bg': 'var(--color-rev-bg)',
+        'rev-surface': 'var(--color-rev-surface)',
+        'rev-on-surface': 'var(--color-rev-on-surface)',
+        'rev-accent': 'var(--color-rev-accent)',
+        
         // Fix: Use proper color value references instead of CSS variables in Tailwind config
         'brand-primary': '#FFC600',
         
@@ -135,6 +158,41 @@ module.exports = {
         // Ring Colors
         'ring': '#FFC600',
       },
+      backgroundColor: {
+        'surface': 'var(--color-surface)',
+        'surface-dark': 'var(--color-surface-dark)',
+        'rev-bg': 'var(--color-rev-bg)',
+        'rev-surface': 'var(--color-rev-surface)',
+      },
+      textColor: {
+        'on-surface': 'var(--color-on-surface)',
+        'on-surface-dark': 'var(--color-on-surface-dark)',
+        'rev-on-surface': 'var(--color-rev-on-surface)',
+      },
+      borderColor: {
+        'divider': 'var(--color-border)',
+        'divider-dark': 'var(--color-border-dark)',
+        'rev-border': 'var(--color-rev-border)',
+      },
+      boxShadow: {
+        '1': 'var(--shadow-1)',
+        '2': 'var(--shadow-2)',
+        'soft-sm': '0 2px 4px rgba(0, 0, 0, 0.05)',
+        'soft-md': '0 4px 8px rgba(0, 0, 0, 0.05)',
+        'soft-lg': '0 8px 16px rgba(0, 0, 0, 0.1)',
+        'soft-xl': '0 12px 24px rgba(0, 0, 0, 0.15)',
+        'dark-sm': '0 2px 4px rgba(0, 0, 0, 0.3)',
+        'dark-md': '0 4px 8px rgba(0, 0, 0, 0.3)',
+        'dark-lg': '0 8px 16px rgba(0, 0, 0, 0.4)',
+        'dark-xl': '0 12px 24px rgba(0, 0, 0, 0.5)',
+      },
+      borderRadius: {
+        'card': 'var(--radius-card)',
+        'sm': '4px',
+        'md': '8px',
+        'lg': '12px',
+        'xl': '16px',
+      },
       fontFamily: {
         'heading': ['Inter', 'sans-serif'],
         'body': ['Roboto', 'sans-serif'],
@@ -151,22 +209,6 @@ module.exports = {
         'h2': ['2rem', { lineHeight: '1.2' }],
         'h3': ['1.5rem', { lineHeight: '1.2' }],
         'body': ['1rem', { lineHeight: '1.5' }],
-      },
-      borderRadius: {
-        'sm': '4px',
-        'md': '8px',
-        'lg': '12px',
-        'xl': '16px',
-      },
-      boxShadow: {
-        'soft-sm': '0 2px 4px rgba(0, 0, 0, 0.05)',
-        'soft-md': '0 4px 8px rgba(0, 0, 0, 0.05)',
-        'soft-lg': '0 8px 16px rgba(0, 0, 0, 0.1)',
-        'soft-xl': '0 12px 24px rgba(0, 0, 0, 0.15)',
-        'dark-sm': '0 2px 4px rgba(0, 0, 0, 0.3)',
-        'dark-md': '0 4px 8px rgba(0, 0, 0, 0.3)',
-        'dark-lg': '0 8px 16px rgba(0, 0, 0, 0.4)',
-        'dark-xl': '0 12px 24px rgba(0, 0, 0, 0.5)',
       },
       animation: {
         'pulse-gentle': 'pulse-gentle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -192,11 +234,20 @@ module.exports = {
       },
     },
   },
+  variants: {
+    extend: {
+      backgroundColor: ['dark', 'reverent'],
+      textColor: ['dark', 'reverent'],
+      borderColor: ['dark', 'reverent'],
+      boxShadow: ['dark', 'reverent'],
+    },
+  },
   plugins: [
     require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
     require('tailwindcss-animate'),
     require("daisyui"),
+    require('tailwind-scrollbar'),
   ],
   daisyui: {
     themes: [

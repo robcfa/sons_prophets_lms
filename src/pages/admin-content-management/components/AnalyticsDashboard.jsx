@@ -2,14 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { safeGet, safeMap } from '../../../utils/safeObjectUtils';
 
 const AnalyticsDashboard = () => {
   const [timeRange, setTimeRange] = useState('7d');
-  const [analyticsData, setAnalyticsData] = useState({});
+  const [analyticsData, setAnalyticsData] = useState({
+    overview: {},
+    userActivity: [],
+    courseEngagement: [],
+    userRoles: [],
+    deviceTypes: [],
+    topContent: []
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock analytics data
+    // Mock analytics data with safe defaults
     const mockData = {
       overview: {
         totalUsers: 1247,
@@ -99,6 +107,14 @@ const AnalyticsDashboard = () => {
     );
   }
 
+  // Safe access to analytics data with defaults
+  const overview = safeGet(analyticsData, 'overview', {});
+  const userActivity = safeGet(analyticsData, 'userActivity', []);
+  const courseEngagement = safeGet(analyticsData, 'courseEngagement', []);
+  const userRoles = safeGet(analyticsData, 'userRoles', []);
+  const deviceTypes = safeGet(analyticsData, 'deviceTypes', []);
+  const topContent = safeGet(analyticsData, 'topContent', []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -134,42 +150,42 @@ const AnalyticsDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         <StatCard
           title="Total Users"
-          value={formatNumber(analyticsData.overview.totalUsers)}
+          value={formatNumber(safeGet(overview, 'totalUsers', 0))}
           change={12}
           icon="Users"
           color="primary"
         />
         <StatCard
           title="Active Users"
-          value={formatNumber(analyticsData.overview.activeUsers)}
+          value={formatNumber(safeGet(overview, 'activeUsers', 0))}
           change={8}
           icon="UserCheck"
           color="success"
         />
         <StatCard
           title="Total Courses"
-          value={analyticsData.overview.totalCourses}
+          value={safeGet(overview, 'totalCourses', 0)}
           change={5}
           icon="BookOpen"
           color="accent"
         />
         <StatCard
           title="Completion Rate"
-          value={`${analyticsData.overview.completionRate}%`}
+          value={`${safeGet(overview, 'completionRate', 0)}%`}
           change={3}
           icon="Target"
           color="secondary"
         />
         <StatCard
           title="Avg Session"
-          value={analyticsData.overview.avgSessionTime}
+          value={safeGet(overview, 'avgSessionTime', '0:00')}
           change={-2}
           icon="Clock"
           color="warning"
         />
         <StatCard
           title="Total XP"
-          value={formatNumber(analyticsData.overview.totalXPAwarded)}
+          value={formatNumber(safeGet(overview, 'totalXPAwarded', 0))}
           change={15}
           icon="Zap"
           color="primary"
@@ -197,7 +213,7 @@ const AnalyticsDashboard = () => {
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={analyticsData.userActivity}>
+              <AreaChart data={userActivity}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
                 <XAxis 
                   dataKey="date" 
@@ -241,7 +257,7 @@ const AnalyticsDashboard = () => {
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analyticsData.courseEngagement}>
+              <BarChart data={courseEngagement}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
                 <XAxis 
                   dataKey="course" 
@@ -278,7 +294,7 @@ const AnalyticsDashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={analyticsData.userRoles}
+                  data={userRoles}
                   cx="50%"
                   cy="50%"
                   innerRadius={40}
@@ -286,8 +302,8 @@ const AnalyticsDashboard = () => {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {analyticsData.userRoles.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {safeMap(userRoles, (entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry?.color || '#8B4513'} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -295,17 +311,17 @@ const AnalyticsDashboard = () => {
             </ResponsiveContainer>
           </div>
           <div className="space-y-2">
-            {analyticsData.userRoles.map((role, index) => (
+            {safeMap(userRoles, (role, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div 
                     className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: role.color }}
+                    style={{ backgroundColor: safeGet(role, 'color', '#8B4513') }}
                   ></div>
-                  <span className="text-sm text-text-secondary">{role.name}</span>
+                  <span className="text-sm text-text-secondary">{safeGet(role, 'name', '')}</span>
                 </div>
                 <span className="text-sm font-body-semibold text-text-primary">
-                  {role.value}
+                  {safeGet(role, 'value', 0)}
                 </span>
               </div>
             ))}
@@ -321,15 +337,15 @@ const AnalyticsDashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={analyticsData.deviceTypes}
+                  data={deviceTypes}
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
                   dataKey="value"
                   label={({ name, value }) => `${name}: ${value}%`}
                 >
-                  {analyticsData.deviceTypes.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {safeMap(deviceTypes, (entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry?.color || '#8B4513'} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -344,15 +360,15 @@ const AnalyticsDashboard = () => {
             Top Content
           </h3>
           <div className="space-y-4">
-            {analyticsData.topContent.map((content, index) => (
+            {safeMap(topContent, (content, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-body-semibold text-text-primary truncate">
-                    {content.title}
+                    {safeGet(content, 'title', '')}
                   </p>
                   <div className="flex items-center gap-4 text-xs text-text-secondary">
-                    <span>{content.views} views</span>
-                    <span>{content.engagement}% engagement</span>
+                    <span>{safeGet(content, 'views', 0)} views</span>
+                    <span>{safeGet(content, 'engagement', 0)}% engagement</span>
                   </div>
                 </div>
                 <div className="text-right">

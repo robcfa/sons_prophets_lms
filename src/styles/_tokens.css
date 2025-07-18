@@ -1,0 +1,144 @@
+/* ==========================================================================
+   Design System Tokens
+   ========================================================================== */
+
+:root {
+  /* ==========================================================================
+     Spacing System - 8px baseline grid
+     ========================================================================== */
+  --spacing-4: 0.25rem;    /* 4px */
+  --spacing-8: 0.5rem;     /* 8px */
+  --spacing-16: 1rem;      /* 16px */
+  --spacing-24: 1.5rem;    /* 24px */
+  --spacing-32: 2rem;      /* 32px */
+
+  /* ==========================================================================
+     Border Radius
+     ========================================================================== */
+  --radius-card: 8px;
+
+  /* ==========================================================================
+     Elevations/Shadows
+     ========================================================================== */
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-2: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* ==========================================================================
+     Light Theme Colors
+     ========================================================================== */
+  --color-bg: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-on-surface: #1a202c;
+  --color-primary: #8b4513;
+  --color-primary-dark: #6b341a;
+
+  /* ==========================================================================
+     Dark Theme Colors
+     ========================================================================== */
+  --color-bg-dark: #1a1a1a;
+  --color-surface-dark: #2d2d2d;
+  --color-on-surface-dark: #f7fafc;
+  --color-on-surface-dark-secondary: #a0aec0;
+  --color-primary-dark: #d69e2e;
+  --color-primary-dark-hover: #b7791f;
+  --color-border-dark: #4a5568;
+
+  /* ==========================================================================
+     Reverent Theme Colors
+     ========================================================================== */
+  --color-rev-bg: #f7f5f3;
+  --color-rev-surface: #fefefe;
+  --color-rev-on-surface: #2d3748;
+  --color-rev-accent: #8b6914;
+
+  /* ==========================================================================
+     Additional Light Theme Colors
+     ========================================================================== */
+  --color-secondary: #6b7280;
+  --color-accent: #d69e2e;
+  --color-muted: #9ca3af;
+  --color-border: #e2e8f0;
+  --color-input: #ffffff;
+  --color-card: #ffffff;
+  --color-popover: #ffffff;
+  --color-destructive: #dc2626;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+
+  /* ==========================================================================
+     Additional Dark Theme Colors
+     ========================================================================== */
+  --color-secondary-dark: #9ca3af;
+  --color-accent-dark: #fbbf24;
+  --color-muted-dark: #6b7280;
+  --color-input-dark: #374151;
+  --color-card-dark: #374151;
+  --color-popover-dark: #374151;
+  --color-destructive-dark: #f87171;
+  --color-success-dark: #34d399;
+  --color-warning-dark: #fbbf24;
+  --color-info-dark: #60a5fa;
+
+  /* ==========================================================================
+     Additional Reverent Theme Colors
+     ========================================================================== */
+  --color-rev-secondary: #68341a;
+  --color-rev-muted: #8b7355;
+  --color-rev-border: #d4c5b0;
+  --color-rev-input: #fefefe;
+  --color-rev-card: #fefcfa;
+  --color-rev-popover: #fefcfa;
+  --color-rev-destructive: #b91c1c;
+  --color-rev-success: #059669;
+  --color-rev-warning: #d97706;
+  --color-rev-info: #2563eb;
+}
+
+/* ==========================================================================
+   Theme Class Utilities
+   ========================================================================== */
+
+/* Light theme utilities (default) */
+.bg-surface { background-color: var(--color-surface); }
+.bg-card { background-color: var(--color-card); }
+.bg-input { background-color: var(--color-input); }
+.bg-popover { background-color: var(--color-popover); }
+
+.text-on-surface { color: var(--color-on-surface); }
+.text-muted { color: var(--color-muted); }
+.text-secondary { color: var(--color-secondary); }
+
+.border-surface { border-color: var(--color-border); }
+.border-divider { border-color: var(--color-border); }
+
+.shadow-sm { box-shadow: var(--shadow-1); }
+.shadow-md { box-shadow: var(--shadow-2); }
+
+.rounded-card { border-radius: var(--radius-card); }
+
+/* Dark theme utilities */
+.dark .bg-surface { background-color: var(--color-surface-dark); }
+.dark .bg-card { background-color: var(--color-card-dark); }
+.dark .bg-input { background-color: var(--color-input-dark); }
+.dark .bg-popover { background-color: var(--color-popover-dark); }
+
+.dark .text-on-surface { color: var(--color-on-surface-dark); }
+.dark .text-muted { color: var(--color-on-surface-dark-secondary); }
+.dark .text-secondary { color: var(--color-secondary-dark); }
+
+.dark .border-surface { border-color: var(--color-border-dark); }
+.dark .border-divider { border-color: var(--color-border-dark); }
+
+/* Reverent theme utilities */
+.reverent .bg-surface { background-color: var(--color-rev-surface); }
+.reverent .bg-card { background-color: var(--color-rev-card); }
+.reverent .bg-input { background-color: var(--color-rev-input); }
+.reverent .bg-popover { background-color: var(--color-rev-popover); }
+
+.reverent .text-on-surface { color: var(--color-rev-on-surface); }
+.reverent .text-muted { color: var(--color-rev-muted); }
+.reverent .text-secondary { color: var(--color-rev-secondary); }
+
+.reverent .border-surface { border-color: var(--color-rev-border); }
+.reverent .border-divider { border-color: var(--color-rev-border); }

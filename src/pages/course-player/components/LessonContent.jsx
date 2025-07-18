@@ -24,7 +24,7 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
   const handleVideoProgress = (e) => {
     const video = e.target;
     if (video?.duration) {
-      const progress = (video.currentTime / video.duration) * 100;
+      const progress = video.currentTime / video.duration * 100;
       setVideoProgress(progress);
     }
   };
@@ -51,12 +51,12 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
         title: `Bookmark at ${Math.floor(currentTime / 60)}:${Math.floor(currentTime % 60).toString().padStart(2, '0')}`,
         lessonId: lesson.id
       };
-      setBookmarks(prev => [...prev, newBookmark]);
+      setBookmarks((prev) => [...prev, newBookmark]);
     }
   };
 
   const handleQuizAnswer = (questionId, answer) => {
-    setQuizAnswers(prev => ({
+    setQuizAnswers((prev) => ({
       ...prev,
       [questionId]: answer
     }));
@@ -66,49 +66,49 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
     setQuizSubmitted(true);
     // Calculate score and provide feedback
     const questions = safeArray(lesson?.questions);
-    const correctAnswers = questions.filter(q => 
-      quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')
+    const correctAnswers = questions.filter((q) =>
+    quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')
     ).length;
     const totalQuestions = safeLength(questions);
-    const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-    
+    const score = totalQuestions > 0 ? Math.round(correctAnswers / totalQuestions * 100) : 0;
+
     if (score >= 70 && lesson?.id && onLessonComplete) {
       onLessonComplete(lesson.id);
     }
   };
 
-  const renderVideoLesson = () => (
-    <div className="space-y-6">
+  const renderVideoLesson = () =>
+  <div className="space-y-6">
       {/* Video Player */}
       <div className="relative bg-black rounded-lg overflow-hidden shadow-soft-lg">
         <video
-          ref={videoRef}
-          className="w-full aspect-video"
-          controls
-          onTimeUpdate={handleVideoProgress}
-          onEnded={handleVideoEnd}
-          src={lesson.videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"}
-        >
+        ref={videoRef}
+        className="w-full aspect-video"
+        controls
+        onTimeUpdate={handleVideoProgress}
+        onEnded={handleVideoEnd}
+        src={lesson.videoUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"}>
+
           Your browser does not support the video tag.
         </video>
         
         {/* Video Controls Overlay */}
         <div className="absolute bottom-4 right-4 flex items-center space-x-2">
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBookmark}
-            className="bg-black bg-opacity-50 text-white hover:bg-opacity-70"
-          >
+          variant="ghost"
+          size="sm"
+          onClick={handleBookmark}
+          className="bg-black bg-opacity-50 text-white hover:bg-opacity-70">
+
             <Icon name="Bookmark" size={16} />
           </Button>
           
           <div className="relative">
             <select
-              value={playbackSpeed}
-              onChange={(e) => handlePlaybackSpeedChange(parseFloat(e.target.value))}
-              className="bg-black bg-opacity-50 text-white text-sm rounded px-2 py-1 border-none outline-none"
-            >
+            value={playbackSpeed}
+            onChange={(e) => handlePlaybackSpeedChange(parseFloat(e.target.value))}
+            className="bg-black bg-opacity-50 text-white text-sm rounded px-2 py-1 border-none outline-none">
+
               <option value={0.5}>0.5x</option>
               <option value={0.75}>0.75x</option>
               <option value={1}>1x</option>
@@ -131,55 +131,55 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
           </span>
         </div>
         <div className="w-full bg-background rounded-full h-2">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${videoProgress}%` }}
-          />
+          <div
+          className="bg-primary h-2 rounded-full transition-all duration-300"
+          style={{ width: `${videoProgress}%` }} />
+
         </div>
       </div>
 
       {/* Bookmarks */}
-      {bookmarks.length > 0 && (
-        <div className="bg-surface rounded-lg p-4">
+      {bookmarks.length > 0 &&
+    <div className="bg-surface rounded-lg p-4">
           <h3 className="font-heading font-heading-semibold text-text-primary mb-3">
             Bookmarks
           </h3>
           <div className="space-y-2">
-            {bookmarks.map((bookmark) => (
-              <button
-                key={bookmark.id}
-                onClick={() => {
-                  if (videoRef.current) {
-                    videoRef.current.currentTime = bookmark.time;
-                  }
-                }}
-                className="flex items-center space-x-3 p-2 bg-background hover:bg-primary-50 rounded-lg transition-color w-full text-left"
-              >
+            {bookmarks.map((bookmark) =>
+        <button
+          key={bookmark.id}
+          onClick={() => {
+            if (videoRef.current) {
+              videoRef.current.currentTime = bookmark.time;
+            }
+          }}
+          className="flex items-center space-x-3 p-2 bg-background hover:bg-primary-50 rounded-lg transition-color w-full text-left">
+
                 <Icon name="Bookmark" size={16} className="text-accent" />
                 <span className="text-sm font-body text-text-primary">
                   {bookmark.title}
                 </span>
               </button>
-            ))}
+        )}
           </div>
         </div>
-      )}
+    }
 
       {/* Transcript Toggle */}
       <div className="flex items-center justify-between">
         <Button
-          variant="ghost"
-          onClick={() => setShowTranscript(!showTranscript)}
-          className="flex items-center space-x-2"
-        >
+        variant="ghost"
+        onClick={() => setShowTranscript(!showTranscript)}
+        className="flex items-center space-x-2">
+
           <Icon name="FileText" size={16} />
           <span>{showTranscript ? 'Hide' : 'Show'} Transcript</span>
         </Button>
       </div>
 
       {/* Transcript */}
-      {showTranscript && (
-        <div className="bg-surface rounded-lg p-4">
+      {showTranscript &&
+    <div className="bg-surface rounded-lg p-4">
           <h3 className="font-heading font-heading-semibold text-text-primary mb-3">
             Transcript
           </h3>
@@ -189,12 +189,12 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
             </p>
           </div>
         </div>
-      )}
-    </div>
-  );
+    }
+    </div>;
 
-  const renderTextLesson = () => (
-    <div className="space-y-6">
+
+  const renderTextLesson = () =>
+  <div className="space-y-6">
       {/* Font Size Controls */}
       <div className="flex items-center justify-between bg-surface rounded-lg p-4">
         <span className="text-sm font-body font-body-semibold text-text-primary">
@@ -202,22 +202,22 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
         </span>
         <div className="flex items-center space-x-2">
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setFontSize(Math.max(12, fontSize - 2))}
-            disabled={fontSize <= 12}
-          >
+          variant="ghost"
+          size="sm"
+          onClick={() => setFontSize(Math.max(12, fontSize - 2))}
+          disabled={fontSize <= 12}>
+
             <Icon name="Minus" size={16} />
           </Button>
           <span className="text-sm font-data text-text-primary w-8 text-center">
             {fontSize}
           </span>
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setFontSize(Math.min(24, fontSize + 2))}
-            disabled={fontSize >= 24}
-          >
+          variant="ghost"
+          size="sm"
+          onClick={() => setFontSize(Math.min(24, fontSize + 2))}
+          disabled={fontSize >= 24}>
+
             <Icon name="Plus" size={16} />
           </Button>
         </div>
@@ -225,19 +225,19 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
 
       {/* Text Content */}
       <div className="bg-background rounded-lg p-6 shadow-soft-sm">
-        <div 
-          className="prose prose-lg max-w-none"
-          style={{ fontSize: `${fontSize}px` }}
-        >
+        <div
+        className="prose prose-lg max-w-none"
+        style={{ fontSize: `${fontSize}px` }}>
+
           <h1 className="font-heading text-text-primary mb-6">
             {lesson.title}
           </h1>
           
           <div className="text-text-primary leading-relaxed space-y-4">
-            {lesson.content ? (
-              <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
-            ) : (
-              <>
+            {lesson.content ?
+          <div dangerouslySetInnerHTML={{ __html: lesson.content }} /> :
+
+          <>
                 <p>
                   The prophetic literature of the Old Testament represents one of the most significant and challenging portions of Scripture. These books contain messages from God delivered through His chosen servants to the people of Israel and Judah during critical periods of their history.
                 </p>
@@ -278,7 +278,7 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
                   As you study these texts, ask yourself: What does this passage teach about God's character? How does it challenge my understanding of faithfulness? What hope does it offer for difficult circumstances?
                 </p>
               </>
-            )}
+          }
           </div>
         </div>
       </div>
@@ -286,19 +286,19 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
       {/* Completion Button */}
       <div className="flex justify-center">
         <Button
-          variant="primary"
-          onClick={() => onLessonComplete(lesson.id)}
-          className="px-8"
-        >
+        variant="primary"
+        onClick={() => onLessonComplete(lesson.id)}
+        className="px-8">
+
           Mark as Complete
         </Button>
       </div>
-    </div>
-  );
+    </div>;
+
 
   const renderQuizLesson = () => {
     const questions = safeArray(lesson?.questions);
-    
+
     return (
       <div className="space-y-6">
         <div className="bg-surface rounded-lg p-6">
@@ -314,142 +314,142 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
             const questionText = safeProp(question, 'question', '');
             const questionType = safeProp(question, 'type', '');
             const options = safeArray(question?.options);
-            
+
             return (
               <div key={questionId || index} className="mb-8 p-4 bg-background rounded-lg">
                 <h3 className="font-body font-body-semibold text-text-primary mb-4">
                   {index + 1}. {questionText}
                 </h3>
 
-                {questionType === 'multiple-choice' && (
-                  <div className="space-y-2">
-                    {options.map((option, optionIndex) => (
-                      <label
-                        key={optionIndex}
-                        className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color"
-                      >
+                {questionType === 'multiple-choice' &&
+                <div className="space-y-2">
+                    {options.map((option, optionIndex) =>
+                  <label
+                    key={optionIndex}
+                    className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color">
+
                         <input
-                          type="radio"
-                          name={`question-${questionId}`}
-                          value={option}
-                          checked={quizAnswers[questionId] === option}
-                          onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
-                          disabled={quizSubmitted}
-                          className="text-primary focus:ring-primary"
-                        />
+                      type="radio"
+                      name={`question-${questionId}`}
+                      value={option}
+                      checked={quizAnswers[questionId] === option}
+                      onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
+                      disabled={quizSubmitted}
+                      className="text-primary focus:ring-primary" />
+
                         <span className="text-text-primary font-body">{option}</span>
                       </label>
-                    ))}
+                  )}
                   </div>
-                )}
+                }
 
-                {questionType === 'true-false' && (
-                  <div className="space-y-2">
-                    {['True', 'False'].map((option) => (
-                      <label
-                        key={option}
-                        className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color"
-                      >
+                {questionType === 'true-false' &&
+                <div className="space-y-2">
+                    {['True', 'False'].map((option) =>
+                  <label
+                    key={option}
+                    className="flex items-center space-x-3 p-3 bg-surface hover:bg-primary-50 rounded-lg cursor-pointer transition-color">
+
                         <input
-                          type="radio"
-                          name={`question-${questionId}`}
-                          value={option}
-                          checked={quizAnswers[questionId] === option}
-                          onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
-                          disabled={quizSubmitted}
-                          className="text-primary focus:ring-primary"
-                        />
+                      type="radio"
+                      name={`question-${questionId}`}
+                      value={option}
+                      checked={quizAnswers[questionId] === option}
+                      onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
+                      disabled={quizSubmitted}
+                      className="text-primary focus:ring-primary" />
+
                         <span className="text-text-primary font-body">{option}</span>
                       </label>
-                    ))}
+                  )}
                   </div>
-                )}
+                }
 
-                {questionType === 'short-answer' && (
-                  <Input
-                    type="text"
-                    placeholder="Enter your answer..."
-                    value={quizAnswers[questionId] || ''}
-                    onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
-                    disabled={quizSubmitted}
-                    className="w-full"
-                  />
-                )}
+                {questionType === 'short-answer' &&
+                <Input
+                  type="text"
+                  placeholder="Enter your answer..."
+                  value={quizAnswers[questionId] || ''}
+                  onChange={(e) => handleQuizAnswer(questionId, e.target.value)}
+                  disabled={quizSubmitted}
+                  className="w-full" />
+
+                }
 
                 {/* Show feedback after submission */}
-                {quizSubmitted && (
-                  <div className={`mt-4 p-3 rounded-lg ${
-                    quizAnswers[questionId] === safeProp(question, 'correctAnswer')
-                      ? 'bg-success-50 border border-success-200' :'bg-error-50 border border-error-200'
-                  }`}>
+                {quizSubmitted &&
+                <div className={`mt-4 p-3 rounded-lg ${
+                quizAnswers[questionId] === safeProp(question, 'correctAnswer') ?
+                'bg-success-50 border border-success-200' : 'bg-error-50 border border-error-200'}`
+                }>
                     <div className="flex items-center space-x-2 mb-2">
-                      <Icon 
-                        name={quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "CheckCircle" : "XCircle"} 
-                        size={16} 
-                        className={quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "text-success" : "text-error"} 
-                      />
+                      <Icon
+                      name={quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "CheckCircle" : "XCircle"}
+                      size={16}
+                      className={quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "text-success" : "text-error"} />
+
                       <span className={`text-sm font-body font-body-semibold ${
-                        quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "text-success" : "text-error"
-                      }`}>
+                    quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "text-success" : "text-error"}`
+                    }>
                         {quizAnswers[questionId] === safeProp(question, 'correctAnswer') ? "Correct!" : "Incorrect"}
                       </span>
                     </div>
-                    {safeProp(question, 'explanation') && (
-                      <p className="text-sm text-text-secondary font-body">
+                    {safeProp(question, 'explanation') &&
+                  <p className="text-sm text-text-secondary font-body">
                         {safeProp(question, 'explanation')}
                       </p>
-                    )}
-                    {quizAnswers[questionId] !== safeProp(question, 'correctAnswer') && (
-                      <p className="text-sm text-text-secondary font-body mt-1">
+                  }
+                    {quizAnswers[questionId] !== safeProp(question, 'correctAnswer') &&
+                  <p className="text-sm text-text-secondary font-body mt-1">
                         Correct answer: {safeProp(question, 'correctAnswer')}
                       </p>
-                    )}
+                  }
                   </div>
-                )}
-              </div>
-            );
+                }
+              </div>);
+
           })}
 
           {/* Submit Button */}
-          {!quizSubmitted && (
-            <div className="flex justify-center">
+          {!quizSubmitted &&
+          <div className="flex justify-center">
               <Button
-                variant="primary"
-                onClick={handleQuizSubmit}
-                disabled={Object.keys(quizAnswers).length < safeLength(questions)}
-                className="px-8"
-              >
+              variant="primary"
+              onClick={handleQuizSubmit}
+              disabled={Object.keys(quizAnswers).length < safeLength(questions)}
+              className="px-8">
+
                 Submit Quiz
               </Button>
             </div>
-          )}
+          }
 
           {/* Results */}
-          {quizSubmitted && (
-            <div className="bg-primary-50 rounded-lg p-4 text-center">
+          {quizSubmitted &&
+          <div className="bg-primary-50 rounded-lg p-4 text-center">
               <h3 className="font-heading font-heading-semibold text-primary text-lg mb-2">
                 Quiz Results
               </h3>
               <p className="text-text-primary font-body mb-4">
-                You scored {Math.round((questions.filter(q => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length / Math.max(safeLength(questions), 1)) * 100)}% 
-                ({questions.filter(q => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length} out of {safeLength(questions)} correct)
+                You scored {Math.round(questions.filter((q) => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length / Math.max(safeLength(questions), 1) * 100)}% 
+                ({questions.filter((q) => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length} out of {safeLength(questions)} correct)
               </p>
-              {((questions.filter(q => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length / Math.max(safeLength(questions), 1)) * 100) >= 70 ? (
-                <div className="flex items-center justify-center space-x-2 text-success">
+              {questions.filter((q) => quizAnswers[safeProp(q, 'id')] === safeProp(q, 'correctAnswer')).length / Math.max(safeLength(questions), 1) * 100 >= 70 ?
+            <div className="flex items-center justify-center space-x-2 text-success">
                   <Icon name="CheckCircle" size={20} />
                   <span className="font-body font-body-semibold">Passed! Lesson completed.</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2 text-error">
+                </div> :
+
+            <div className="flex items-center justify-center space-x-2 text-error">
                   <Icon name="XCircle" size={20} />
                   <span className="font-body font-body-semibold">You need 70% to pass. Please review and try again.</span>
                 </div>
-              )}
+            }
             </div>
-          )}
+          }
         </div>
-      </div>
-    );
+      </div>);
+
   };
 
   const renderLessonContent = () => {
@@ -470,8 +470,8 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
                 Unknown lesson type: {lessonType || 'none'}
               </p>
             </div>
-          </div>
-        );
+          </div>);
+
     }
   };
 
@@ -484,8 +484,8 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
             Select a lesson from the syllabus to begin
           </p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -499,23 +499,23 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
               <span className="text-sm font-caption text-text-secondary capitalize">
                 {safeProp(lesson, 'type', 'Unknown')} Lesson
               </span>
-              {safeProp(lesson, 'duration') && (
-                <>
+              {safeProp(lesson, 'duration') &&
+              <>
                   <span className="text-text-muted">•</span>
                   <span className="text-sm font-caption text-text-secondary">
                     {safeProp(lesson, 'duration')}
                   </span>
                 </>
-              )}
+              }
             </div>
             <h1 className="font-heading font-heading-semibold text-text-primary text-2xl">
               {safeProp(lesson, 'title', 'Untitled Lesson')}
             </h1>
-            {safeProp(lesson, 'description') && (
-              <p className="text-text-secondary font-body mt-2">
+            {safeProp(lesson, 'description') &&
+            <p className="text-text-secondary font-body mt-2">
                 {safeProp(lesson, 'description')}
               </p>
-            )}
+            }
           </div>
         </div>
       </div>
@@ -531,34 +531,34 @@ const LessonContent = ({ lesson = {}, onLessonComplete, onNextLesson, onPrevLess
           <Button
             variant="ghost"
             onClick={onPrevLesson}
-            className="flex items-center space-x-2"
-          >
+            className="flex items-center space-x-2">
+
             <Icon name="ChevronLeft" size={16} />
             <span>Previous</span>
           </Button>
           
           <div className="flex items-center space-x-4">
             <Button
-              variant="outline"
-              className="flex items-center space-x-2"
-            >
+              variant="outline">
+
+
               <Icon name="MessageCircle" size={16} />
-              <span>Ask AI Assistant</span>
+              <span>Scripture Chat</span>
             </Button>
           </div>
           
           <Button
             variant="primary"
             onClick={onNextLesson}
-            className="flex items-center space-x-2"
-          >
+            className="flex items-center space-x-2">
+
             <span>Next</span>
             <Icon name="ChevronRight" size={16} />
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LessonContent;
