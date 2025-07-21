@@ -1,0 +1,353 @@
+/* ==========================================================================
+   Design System Tokens - Token-First Approach
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* ==========================================================================
+     Typography System - Playfair Display for headings, Inter for body
+     ========================================================================== */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-caption: 'Inter', sans-serif;
+  --font-data: 'JetBrains Mono', monospace;
+
+  /* ==========================================================================
+     Spacing System - 4px baseline grid
+     ========================================================================== */
+  --spacing-1: 0.25rem;    /* 4px */
+  --spacing-2: 0.5rem;     /* 8px */
+  --spacing-3: 0.75rem;    /* 12px */
+  --spacing-4: 1rem;       /* 16px */
+  --spacing-5: 1.25rem;    /* 20px */
+  --spacing-6: 1.5rem;     /* 24px */
+  --spacing-8: 2rem;       /* 32px */
+  --spacing-10: 2.5rem;    /* 40px */
+  --spacing-12: 3rem;      /* 48px */
+  --spacing-16: 4rem;      /* 64px */
+  --spacing-20: 5rem;      /* 80px */
+  --spacing-24: 6rem;      /* 96px */
+
+  /* ==========================================================================
+     Border Radius System
+     ========================================================================== */
+  --radius-none: 0;
+  --radius-sm: 0.125rem;   /* 2px */
+  --radius-md: 0.25rem;    /* 4px */
+  --radius-lg: 0.5rem;     /* 8px */
+  --radius-xl: 0.75rem;    /* 12px */
+  --radius-2xl: 1rem;      /* 16px */
+  --radius-3xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+
+  /* ==========================================================================
+     Elevation System
+     ========================================================================== */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --elevation-2: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --elevation-3: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --elevation-4: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --elevation-5: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --elevation-6: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* ==========================================================================
+     Light Theme Color Palette
+     ========================================================================== */
+  --light-primary: #8B4513;
+  --light-primary-50: #FDF8F5;
+  --light-primary-100: #F5E6D3;
+  --light-primary-200: #E6C2A6;
+  --light-primary-300: #D4A574;
+  --light-primary-400: #B8824A;
+  --light-primary-500: #8B4513;
+  --light-primary-600: #7A3D11;
+  --light-primary-700: #68350F;
+  --light-primary-800: #562C0D;
+  --light-primary-900: #45240B;
+
+  --light-secondary: #2F4F4F;
+  --light-secondary-50: #F7F8F8;
+  --light-secondary-100: #E8EBEB;
+  --light-secondary-200: #D1D7D7;
+  --light-secondary-300: #B0BABA;
+  --light-secondary-400: #8A9999;
+  --light-secondary-500: #647777;
+  --light-secondary-600: #4A5F5F;
+  --light-secondary-700: #2F4F4F;
+  --light-secondary-800: #253F3F;
+  --light-secondary-900: #1C2F2F;
+
+  --light-background: #FEFEFE;
+  --light-surface: #F8F6F3;
+  --light-surface-elevated: #FFFFFF;
+  --light-border: #E5E5E5;
+  --light-divider: #F0F0F0;
+  --light-text-primary: #2C2C2C;
+  --light-text-secondary: #6B6B6B;
+  --light-text-muted: #9CA3AF;
+  --light-text-disabled: #C7C7C7;
+
+  --light-success: #22C55E;
+  --light-warning: #F59E0B;
+  --light-error: #EF4444;
+  --light-info: #3B82F6;
+
+  /* ==========================================================================
+     Dark Theme Color Palette
+     ========================================================================== */
+  --dark-primary: #D4A574;
+  --dark-primary-50: #45240B;
+  --dark-primary-100: #562C0D;
+  --dark-primary-200: #68350F;
+  --dark-primary-300: #7A3D11;
+  --dark-primary-400: #8B4513;
+  --dark-primary-500: #B8824A;
+  --dark-primary-600: #D4A574;
+  --dark-primary-700: #E6C2A6;
+  --dark-primary-800: #F5E6D3;
+  --dark-primary-900: #FDF8F5;
+
+  --dark-secondary: #8A9999;
+  --dark-secondary-50: #1C2F2F;
+  --dark-secondary-100: #253F3F;
+  --dark-secondary-200: #2F4F4F;
+  --dark-secondary-300: #4A5F5F;
+  --dark-secondary-400: #647777;
+  --dark-secondary-500: #8A9999;
+  --dark-secondary-600: #B0BABA;
+  --dark-secondary-700: #D1D7D7;
+  --dark-secondary-800: #E8EBEB;
+  --dark-secondary-900: #F7F8F8;
+
+  --dark-background: #121212;
+  --dark-surface: #1E1E1E;
+  --dark-surface-elevated: #2D2D2D;
+  --dark-border: #404040;
+  --dark-divider: #2A2A2A;
+  --dark-text-primary: #F8F9FA;
+  --dark-text-secondary: #ADB5BD;
+  --dark-text-muted: #6C757D;
+  --dark-text-disabled: #495057;
+
+  --dark-success: #34D399;
+  --dark-warning: #FBBF24;
+  --dark-error: #F87171;
+  --dark-info: #60A5FA;
+
+  /* ==========================================================================
+     Reverent Theme Color Palette (Sanctuary Mode)
+     ========================================================================== */
+  --reverent-primary: #6B4226;
+  --reverent-primary-50: #FAF7F4;
+  --reverent-primary-100: #F0E8DE;
+  --reverent-primary-200: #E0D1BD;
+  --reverent-primary-300: #D0BA9C;
+  --reverent-primary-400: #C0A37B;
+  --reverent-primary-500: #A18B5E;
+  --reverent-primary-600: #8B7347;
+  --reverent-primary-700: #6B4226;
+  --reverent-primary-800: #563526;
+  --reverent-primary-900: #412821;
+
+  --reverent-accent: #8B6914;
+  --reverent-charcoal: #3C3C3C;
+  
+  --reverent-background: #F7F5F3;
+  --reverent-surface: #FEFEFE;
+  --reverent-surface-elevated: #FFFFFF;
+  --reverent-border: #D4C5B0;
+  --reverent-divider: #E8E0D6;
+  --reverent-text-primary: #3C3C3C;
+  --reverent-text-secondary: #68341A;
+  --reverent-text-muted: #8B7355;
+  --reverent-text-disabled: #A8A8A8;
+
+  --reverent-success: #059669;
+  --reverent-warning: #D97706;
+  --reverent-error: #B91C1C;
+  --reverent-info: #2563EB;
+
+  /* ==========================================================================
+     Default Theme Variables (Light Mode)
+     ========================================================================== */
+  --color-primary: var(--light-primary);
+  --color-primary-50: var(--light-primary-50);
+  --color-primary-100: var(--light-primary-100);
+  --color-primary-200: var(--light-primary-200);
+  --color-primary-300: var(--light-primary-300);
+  --color-primary-400: var(--light-primary-400);
+  --color-primary-500: var(--light-primary-500);
+  --color-primary-600: var(--light-primary-600);
+  --color-primary-700: var(--light-primary-700);
+  --color-primary-800: var(--light-primary-800);
+  --color-primary-900: var(--light-primary-900);
+
+  --color-secondary: var(--light-secondary);
+  --color-secondary-50: var(--light-secondary-50);
+  --color-secondary-100: var(--light-secondary-100);
+  --color-secondary-200: var(--light-secondary-200);
+  --color-secondary-300: var(--light-secondary-300);
+  --color-secondary-400: var(--light-secondary-400);
+  --color-secondary-500: var(--light-secondary-500);
+  --color-secondary-600: var(--light-secondary-600);
+  --color-secondary-700: var(--light-secondary-700);
+  --color-secondary-800: var(--light-secondary-800);
+  --color-secondary-900: var(--light-secondary-900);
+
+  --color-background: var(--light-background);
+  --color-surface: var(--light-surface);
+  --color-surface-elevated: var(--light-surface-elevated);
+  --color-border: var(--light-border);
+  --color-divider: var(--light-divider);
+  --color-text-primary: var(--light-text-primary);
+  --color-text-secondary: var(--light-text-secondary);
+  --color-text-muted: var(--light-text-muted);
+  --color-text-disabled: var(--light-text-disabled);
+
+  --color-success: var(--light-success);
+  --color-warning: var(--light-warning);
+  --color-error: var(--light-error);
+  --color-info: var(--light-info);
+
+  /* ==========================================================================
+     Text Size System with 4px baseline grid
+     ========================================================================== */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+  --text-5xl: 3rem;        /* 48px */
+  --text-6xl: 3.75rem;     /* 60px */
+
+  /* Line heights maintaining 4px baseline grid */
+  --leading-tight: 1.25;   /* 20px for 16px text */
+  --leading-normal: 1.5;   /* 24px for 16px text */
+  --leading-relaxed: 1.75; /* 28px for 16px text */
+  --leading-loose: 2;      /* 32px for 16px text */
+}
+
+/* ==========================================================================
+   Dark Theme Class
+   ========================================================================== */
+.dark {
+  --color-primary: var(--dark-primary);
+  --color-primary-50: var(--dark-primary-50);
+  --color-primary-100: var(--dark-primary-100);
+  --color-primary-200: var(--dark-primary-200);
+  --color-primary-300: var(--dark-primary-300);
+  --color-primary-400: var(--dark-primary-400);
+  --color-primary-500: var(--dark-primary-500);
+  --color-primary-600: var(--dark-primary-600);
+  --color-primary-700: var(--dark-primary-700);
+  --color-primary-800: var(--dark-primary-800);
+  --color-primary-900: var(--dark-primary-900);
+
+  --color-secondary: var(--dark-secondary);
+  --color-secondary-50: var(--dark-secondary-50);
+  --color-secondary-100: var(--dark-secondary-100);
+  --color-secondary-200: var(--dark-secondary-200);
+  --color-secondary-300: var(--dark-secondary-300);
+  --color-secondary-400: var(--dark-secondary-400);
+  --color-secondary-500: var(--dark-secondary-500);
+  --color-secondary-600: var(--dark-secondary-600);
+  --color-secondary-700: var(--dark-secondary-700);
+  --color-secondary-800: var(--dark-secondary-800);
+  --color-secondary-900: var(--dark-secondary-900);
+
+  --color-background: var(--dark-background);
+  --color-surface: var(--dark-surface);
+  --color-surface-elevated: var(--dark-surface-elevated);
+  --color-border: var(--dark-border);
+  --color-divider: var(--dark-divider);
+  --color-text-primary: var(--dark-text-primary);
+  --color-text-secondary: var(--dark-text-secondary);
+  --color-text-muted: var(--dark-text-muted);
+  --color-text-disabled: var(--dark-text-disabled);
+
+  --color-success: var(--dark-success);
+  --color-warning: var(--dark-warning);
+  --color-error: var(--dark-error);
+  --color-info: var(--dark-info);
+}
+
+/* ==========================================================================
+   Reverent Theme Class (Sanctuary Mode)
+   ========================================================================== */
+.reverent {
+  --color-primary: var(--reverent-primary);
+  --color-primary-50: var(--reverent-primary-50);
+  --color-primary-100: var(--reverent-primary-100);
+  --color-primary-200: var(--reverent-primary-200);
+  --color-primary-300: var(--reverent-primary-300);
+  --color-primary-400: var(--reverent-primary-400);
+  --color-primary-500: var(--reverent-primary-500);
+  --color-primary-600: var(--reverent-primary-600);
+  --color-primary-700: var(--reverent-primary-700);
+  --color-primary-800: var(--reverent-primary-800);
+  --color-primary-900: var(--reverent-primary-900);
+
+  --color-secondary: var(--reverent-primary);
+  --color-accent: var(--reverent-accent);
+  --color-charcoal: var(--reverent-charcoal);
+
+  --color-background: var(--reverent-background);
+  --color-surface: var(--reverent-surface);
+  --color-surface-elevated: var(--reverent-surface-elevated);
+  --color-border: var(--reverent-border);
+  --color-divider: var(--reverent-divider);
+  --color-text-primary: var(--reverent-text-primary);
+  --color-text-secondary: var(--reverent-text-secondary);
+  --color-text-muted: var(--reverent-text-muted);
+  --color-text-disabled: var(--reverent-text-disabled);
+
+  --color-success: var(--reverent-success);
+  --color-warning: var(--reverent-warning);
+  --color-error: var(--reverent-error);
+  --color-info: var(--reverent-info);
+
+  /* Sanctuary Mode specific adjustments */
+  font-size: 110%;
+  line-height: var(--leading-relaxed);
+}
+
+/* ==========================================================================
+   Accessibility Features
+   ========================================================================== */
+.sanctuary-mode {
+  --text-base: 1.125rem;   /* 18px instead of 16px */
+  --text-lg: 1.25rem;      /* 20px instead of 18px */
+  --text-xl: 1.5rem;       /* 24px instead of 20px */
+  --leading-normal: 1.75;  /* Increased line height */
+  --leading-relaxed: 2;    /* More relaxed line height */
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+.text-adjustable-xs { font-size: var(--text-xs); }
+.text-adjustable-sm { font-size: var(--text-sm); }
+.text-adjustable-base { font-size: var(--text-base); }
+.text-adjustable-lg { font-size: var(--text-lg); }
+.text-adjustable-xl { font-size: var(--text-xl); }
+.text-adjustable-2xl { font-size: var(--text-2xl); }
+.text-adjustable-3xl { font-size: var(--text-3xl); }
+.text-adjustable-4xl { font-size: var(--text-4xl); }
+.text-adjustable-5xl { font-size: var(--text-5xl); }
+.text-adjustable-6xl { font-size: var(--text-6xl); }
+
+.leading-tight { line-height: var(--leading-tight); }
+.leading-normal { line-height: var(--leading-normal); }
+.leading-relaxed { line-height: var(--leading-relaxed); }
+.leading-loose { line-height: var(--leading-loose); }
+
+.font-heading { font-family: var(--font-heading); }
+.font-body { font-family: var(--font-body); }
+.font-caption { font-family: var(--font-caption); }
+.font-data { font-family: var(--font-data); }

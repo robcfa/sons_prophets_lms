@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import authService from "../utils/authService";
-import { safeGet } from "../utils/safeObjectUtils";
+import { initializeSchema } from "../utils/database";
 
 const AuthContext = createContext();
 
@@ -13,58 +13,36 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Initialize auth state
+    // Initialize database schema and auth state
     const initializeAuth = async () => {
       try {
         setLoading(true);
         setAuthError(null);
 
-        // Check localStorage for existing session (mock authentication)
-        const isAuthenticated = localStorage.getItem('isAuthenticated');
-        const userRole = localStorage.getItem('userRole');
-        const userEmail = localStorage.getItem('userEmail');
+        // Initialize database schema
+        await initializeSchema();
 
-        if (isAuthenticated === 'true' && userRole && userEmail && isMounted) {
-          // Create mock user object
-          const mockUser = {
-            id: `user_${userRole}_${Date.now()}`,
-            email: userEmail,
-            role: userRole,
-            name: userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1)
-          };
-
-          setUser(mockUser);
-          setUserProfile({
-            id: mockUser.id,
-            email: mockUser.email,
-            role: mockUser.role,
-            name: mockUser.name,
-            created_at: new Date().toISOString()
-          });
-        } else {
-          // Try Supabase authentication as fallback
-          const sessionResult = await authService.getSession();
-
-          if (
-            sessionResult?.success &&
-            safeGet(sessionResult, 'data.session.user') &&
-            isMounted
-          ) {
-            const authUser = sessionResult.data.session.user;
-            setUser(authUser);
-
-            // Fetch user profile
-            const profileResult = await authService.getUserProfile(authUser.id);
-
-            if (profileResult?.success && profileResult?.data && isMounted) {
-              setUserProfile(profileResult.data);
-            }
+        // Check for existing token in localStorage
+        const token = localStorage.getItem('authToken');
+        
+        if (token && isMounted) {
+          // Verify token and get user session
+          const sessionResult = await authService.getSession(token);
+          
+          if (sessionResult?.success && isMounted) {
+            setUser(sessionResult.data.user);
+            setUserProfile(sessionResult.data.user);
+          } else {
+            // Token invalid, remove it
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userEmail');
           }
         }
       } catch (error) {
         if (isMounted) {
           setAuthError("Failed to initialize authentication");
-          console.log("Auth initialization error:", error);
+          console.error("Auth initialization error:", error);
         }
       } finally {
         if (isMounted) {
@@ -75,107 +53,40 @@ export function AuthProvider({ children }) {
 
     initializeAuth();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = authService.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return;
-
-      setAuthError(null);
-
-      if (event === "SIGNED_IN" && safeGet(session, 'user')) {
-        setUser(session.user);
-
-        // Fetch user profile for signed in user
-        authService.getUserProfile(session.user.id).then((profileResult) => {
-          if (profileResult?.success && profileResult?.data && isMounted) {
-            setUserProfile(profileResult.data);
-          } else if (isMounted) {
-            setAuthError(profileResult?.error || "Failed to load user profile");
-          }
-        });
-      } else if (event === "SIGNED_OUT") {
-        setUser(null);
-        setUserProfile(null);
-        // Clear localStorage on sign out
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('rememberMe');
-      } else if (event === "TOKEN_REFRESHED" && safeGet(session, 'user')) {
-        setUser(session.user);
-      }
-    });
-
     return () => {
       isMounted = false;
-      subscription?.unsubscribe?.();
     };
   }, []);
 
-  // Sign in function - supports both mock and Supabase authentication
+  // Sign in function
   const signIn = async (email, password) => {
     try {
       setAuthError(null);
-      
-      // Mock credentials for different user roles
-      const mockCredentials = {
-        learner: { email: 'learner@sonsprophets.com', password: 'learner123' },
-        coach: { email: 'coach@sonsprophets.com', password: 'coach123' },
-        admin: { email: 'admin@sonsprophets.com', password: 'admin123' }
-      };
+      setLoading(true);
 
-      // Check mock credentials first
-      let userRole = null;
-      let isValidCredentials = false;
+      const result = await authService.signIn(email, password);
 
-      Object.entries(mockCredentials).forEach(([role, credentials]) => {
-        if (email === credentials.email && password === credentials.password) {
-          userRole = role;
-          isValidCredentials = true;
-        }
-      });
-
-      if (isValidCredentials) {
-        // Mock authentication success
-        const mockUser = {
-          id: `user_${userRole}_${Date.now()}`,
-          email: email,
-          role: userRole,
-          name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1)
-        };
-
-        setUser(mockUser);
-        setUserProfile({
-          id: mockUser.id,
-          email: mockUser.email,
-          role: mockUser.role,
-          name: mockUser.name,
-          created_at: new Date().toISOString()
-        });
-
-        // Store in localStorage
-        localStorage.setItem('userRole', userRole);
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('isAuthenticated', 'true');
-
-        return { success: true, data: { user: mockUser } };
-      } else {
-        // Try Supabase authentication as fallback
-        const result = await authService.signIn(email, password);
-
-        if (!result?.success) {
-          setAuthError(result?.error || "Invalid email or password");
-          return { success: false, error: result?.error || "Invalid email or password" };
-        }
-
-        return { success: true, data: result.data };
+      if (!result?.success) {
+        setAuthError(result?.error || "Invalid email or password");
+        return { success: false, error: result?.error || "Invalid email or password" };
       }
+
+      // Store token and user data
+      localStorage.setItem('authToken', result.data.token);
+      localStorage.setItem('userRole', result.data.user.role);
+      localStorage.setItem('userEmail', result.data.user.email);
+
+      setUser(result.data.user);
+      setUserProfile(result.data.user);
+
+      return { success: true, data: result.data };
     } catch (error) {
       const errorMsg = "Something went wrong during login. Please try again.";
       setAuthError(errorMsg);
-      console.log("Sign in error:", error);
+      console.error("Sign in error:", error);
       return { success: false, error: errorMsg };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -183,19 +94,23 @@ export function AuthProvider({ children }) {
   const signUp = async (email, password, userData = {}) => {
     try {
       setAuthError(null);
+      setLoading(true);
+
       const result = await authService.signUp(email, password, userData);
 
       if (!result?.success) {
-        setAuthError(result?.error || "Signup failed");
-        return { success: false, error: result?.error };
+        setAuthError(result?.error || "Registration failed");
+        return { success: false, error: result?.error || "Registration failed" };
       }
 
       return { success: true, data: result.data };
     } catch (error) {
-      const errorMsg = "Something went wrong during signup. Please try again.";
+      const errorMsg = "Something went wrong during registration. Please try again.";
       setAuthError(errorMsg);
-      console.log("Sign up error:", error);
+      console.error("Sign up error:", error);
       return { success: false, error: errorMsg };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,24 +119,23 @@ export function AuthProvider({ children }) {
     try {
       setAuthError(null);
       
-      // Clear localStorage first
-      localStorage.removeItem('isAuthenticated');
+      // Clear localStorage
+      localStorage.removeItem('authToken');
       localStorage.removeItem('userRole');
       localStorage.removeItem('userEmail');
-      localStorage.removeItem('rememberMe');
       
       // Clear state
       setUser(null);
       setUserProfile(null);
 
-      // Try Supabase sign out as well
+      // Call auth service signOut (for cleanup)
       await authService.signOut();
 
       return { success: true };
     } catch (error) {
       const errorMsg = "Something went wrong during logout. Please try again.";
       setAuthError(errorMsg);
-      console.log("Sign out error:", error);
+      console.error("Sign out error:", error);
       return { success: false, error: errorMsg };
     }
   };
@@ -231,7 +145,7 @@ export function AuthProvider({ children }) {
     try {
       setAuthError(null);
 
-      if (!safeGet(user, 'id')) {
+      if (!user?.id) {
         const errorMsg = "User not authenticated";
         setAuthError(errorMsg);
         return { success: false, error: errorMsg };
@@ -241,16 +155,15 @@ export function AuthProvider({ children }) {
 
       if (!result?.success) {
         setAuthError(result?.error || "Profile update failed");
-        return { success: false, error: result?.error };
+        return { success: false, error: result?.error || "Profile update failed" };
       }
 
-      setUserProfile(result.data || {});
+      setUserProfile(result.data);
       return { success: true, data: result.data };
     } catch (error) {
-      const errorMsg =
-        "Something went wrong updating profile. Please try again.";
+      const errorMsg = "Something went wrong updating profile. Please try again.";
       setAuthError(errorMsg);
-      console.log("Update profile error:", error);
+      console.error("Update profile error:", error);
       return { success: false, error: errorMsg };
     }
   };
@@ -263,15 +176,54 @@ export function AuthProvider({ children }) {
 
       if (!result?.success) {
         setAuthError(result?.error || "Password reset failed");
-        return { success: false, error: result?.error };
+        return { success: false, error: result?.error || "Password reset failed" };
       }
 
-      return { success: true };
+      return { success: true, message: result.message };
     } catch (error) {
-      const errorMsg =
-        "Something went wrong sending reset email. Please try again.";
+      const errorMsg = "Something went wrong sending reset email. Please try again.";
       setAuthError(errorMsg);
-      console.log("Reset password error:", error);
+      console.error("Reset password error:", error);
+      return { success: false, error: errorMsg };
+    }
+  };
+
+  // Verify email function
+  const verifyEmail = async (token) => {
+    try {
+      setAuthError(null);
+      const result = await authService.verifyEmail(token);
+
+      if (!result?.success) {
+        setAuthError(result?.error || "Email verification failed");
+        return { success: false, error: result?.error || "Email verification failed" };
+      }
+
+      return { success: true, data: result.data };
+    } catch (error) {
+      const errorMsg = "Something went wrong verifying email. Please try again.";
+      setAuthError(errorMsg);
+      console.error("Verify email error:", error);
+      return { success: false, error: errorMsg };
+    }
+  };
+
+  // Reset password with token
+  const resetPasswordWithToken = async (token, newPassword) => {
+    try {
+      setAuthError(null);
+      const result = await authService.resetPasswordWithToken(token, newPassword);
+
+      if (!result?.success) {
+        setAuthError(result?.error || "Password reset failed");
+        return { success: false, error: result?.error || "Password reset failed" };
+      }
+
+      return { success: true, message: result.message };
+    } catch (error) {
+      const errorMsg = "Something went wrong resetting password. Please try again.";
+      setAuthError(errorMsg);
+      console.error("Reset password with token error:", error);
       return { success: false, error: errorMsg };
     }
   };
@@ -286,6 +238,8 @@ export function AuthProvider({ children }) {
     signOut,
     updateProfile,
     resetPassword,
+    verifyEmail,
+    resetPasswordWithToken,
     clearError: () => setAuthError(null),
   };
 

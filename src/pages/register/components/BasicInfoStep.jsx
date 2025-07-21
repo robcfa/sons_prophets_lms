@@ -1,184 +1,244 @@
 import React, { useState } from 'react';
-import Input from '../../../components/ui/Input';
-import Icon from '../../../components/AppIcon';
+import { useForm } from 'react-hook-form';
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 
-const BasicInfoStep = ({ formData, onFormChange, errors }) => {
+const BasicInfoStep = ({ onNext, initialData }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const getPasswordStrength = (password) => {
-    if (!password) return { strength: 0, label: '', color: '' };
-    
-    let score = 0;
-    if (password.length >= 8) score++;
-    if (/[a-z]/.test(password)) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    setError,
+  } = useForm({
+    defaultValues: initialData || {}
+  });
 
-    const levels = [
-      { strength: 0, label: '', color: '' },
-      { strength: 1, label: 'Very Weak', color: 'bg-error' },
-      { strength: 2, label: 'Weak', color: 'bg-warning' },
-      { strength: 3, label: 'Fair', color: 'bg-accent' },
-      { strength: 4, label: 'Good', color: 'bg-success' },
-      { strength: 5, label: 'Strong', color: 'bg-success' }
-    ];
+  const password = watch('password');
 
-    return levels[score];
+  const onSubmit = async (data) => {
+    try {
+      // Validate password confirmation
+      if (data.password !== data.confirmPassword) {
+        setError('confirmPassword', { message: 'Passwords do not match' });
+        return;
+      }
+
+      // Pass data to next step
+      onNext(data);
+    } catch (error) {
+      setError('root', { message: 'An unexpected error occurred. Please try again.' });
+    }
   };
-
-  const passwordStrength = getPasswordStrength(formData.password);
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-heading font-bold text-text-primary mb-2">
-          Create Your Account
-        </h2>
-        <p className="text-text-secondary font-body">
-          Let's start with your basic information
+        <h2 className="text-2xl font-bold text-text-primary">Create Your Account</h2>
+        <p className="mt-2 text-text-secondary">
+          Enter your basic information to get started
         </p>
       </div>
 
-      <div className="space-y-4">
-        {/* Full Name */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Full Name Field */}
         <div>
-          <label className="block text-sm font-body font-semibold text-text-primary mb-2">
-            Full Name *
+          <label htmlFor="fullName" className="block text-sm font-medium text-text-primary mb-2">
+            Full Name
           </label>
-          <Input
-            type="text"
-            placeholder="Enter your full name"
-            value={formData.fullName}
-            onChange={(e) => onFormChange('fullName', e.target.value)}
-            className={errors.fullName ? 'border-error' : ''}
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <User className="h-5 w-5 text-text-secondary" />
+            </div>
+            <input
+              id="fullName"
+              type="text"
+              autoComplete="name"
+              className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
+                errors.fullName ? 'border-red-500' : 'border-border'
+              }`}
+              placeholder="Enter your full name"
+              {...register('fullName', {
+                required: 'Full name is required',
+                minLength: {
+                  value: 2,
+                  message: 'Full name must be at least 2 characters',
+                },
+              })}
+            />
+          </div>
           {errors.fullName && (
-            <p className="mt-1 text-sm text-error font-body flex items-center">
-              <Icon name="AlertCircle" size={16} className="mr-1" />
-              {errors.fullName}
-            </p>
+            <p className="mt-1 text-sm text-red-500">{errors.fullName.message}</p>
           )}
         </div>
 
-        {/* Email */}
+        {/* Email Field */}
         <div>
-          <label className="block text-sm font-body font-semibold text-text-primary mb-2">
-            Email Address *
+          <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-2">
+            Email Address
           </label>
-          <Input
-            type="email"
-            placeholder="Enter your email address"
-            value={formData.email}
-            onChange={(e) => onFormChange('email', e.target.value)}
-            className={errors.email ? 'border-error' : ''}
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Mail className="h-5 w-5 text-text-secondary" />
+            </div>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
+                errors.email ? 'border-red-500' : 'border-border'
+              }`}
+              placeholder="Enter your email"
+              {...register('email', {
+                required: 'Email is required',
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: 'Please enter a valid email address',
+                },
+              })}
+            />
+          </div>
           {errors.email && (
-            <p className="mt-1 text-sm text-error font-body flex items-center">
-              <Icon name="AlertCircle" size={16} className="mr-1" />
-              {errors.email}
-            </p>
+            <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
           )}
         </div>
 
-        {/* Password */}
+        {/* Password Field */}
         <div>
-          <label className="block text-sm font-body font-semibold text-text-primary mb-2">
-            Password *
+          <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
+            Password
           </label>
           <div className="relative">
-            <Input
-              type={showPassword ? "text" : "password"}
-              placeholder="Create a strong password"
-              value={formData.password}
-              onChange={(e) => onFormChange('password', e.target.value)}
-              className={`pr-12 ${errors.password ? 'border-error' : ''}`}
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-text-secondary" />
+            </div>
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              className={`block w-full pl-10 pr-12 py-3 border rounded-lg shadow-sm placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
+                errors.password ? 'border-red-500' : 'border-border'
+              }`}
+              placeholder="Create a password"
+              {...register('password', {
+                required: 'Password is required',
+                minLength: {
+                  value: 8,
+                  message: 'Password must be at least 8 characters',
+                },
+                pattern: {
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                  message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+                },
+              })}
             />
             <button
               type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-primary transition-color"
             >
-              <Icon name={showPassword ? "EyeOff" : "Eye"} size={20} />
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-text-secondary hover:text-text-primary" />
+              ) : (
+                <Eye className="h-5 w-5 text-text-secondary hover:text-text-primary" />
+              )}
             </button>
           </div>
-          
-          {/* Password Strength Indicator */}
-          {formData.password && (
-            <div className="mt-2">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="flex-1 bg-border rounded-full h-2">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-300 ${passwordStrength.color}`}
-                    style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs font-caption text-text-muted">
-                  {passwordStrength.label}
-                </span>
-              </div>
-              <div className="text-xs text-text-muted font-body">
-                Password should contain uppercase, lowercase, numbers, and special characters
-              </div>
-            </div>
-          )}
-          
           {errors.password && (
-            <p className="mt-1 text-sm text-error font-body flex items-center">
-              <Icon name="AlertCircle" size={16} className="mr-1" />
-              {errors.password}
-            </p>
+            <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
           )}
         </div>
 
-        {/* Confirm Password */}
+        {/* Confirm Password Field */}
         <div>
-          <label className="block text-sm font-body font-semibold text-text-primary mb-2">
-            Confirm Password *
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-primary mb-2">
+            Confirm Password
           </label>
           <div className="relative">
-            <Input
-              type={showConfirmPassword ? "text" : "password"}
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-text-secondary" />
+            </div>
+            <input
+              id="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              className={`block w-full pl-10 pr-12 py-3 border rounded-lg shadow-sm placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
+                errors.confirmPassword ? 'border-red-500' : 'border-border'
+              }`}
               placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={(e) => onFormChange('confirmPassword', e.target.value)}
-              className={`pr-12 ${errors.confirmPassword ? 'border-error' : ''}`}
+              {...register('confirmPassword', {
+                required: 'Please confirm your password',
+                validate: (value) => value === password || 'Passwords do not match',
+              })}
             />
             <button
               type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-text-primary transition-color"
             >
-              <Icon name={showConfirmPassword ? "EyeOff" : "Eye"} size={20} />
+              {showConfirmPassword ? (
+                <EyeOff className="h-5 w-5 text-text-secondary hover:text-text-primary" />
+              ) : (
+                <Eye className="h-5 w-5 text-text-secondary hover:text-text-primary" />
+              )}
             </button>
           </div>
-          
-          {/* Password Match Indicator */}
-          {formData.confirmPassword && (
-            <div className="mt-1 flex items-center">
-              {formData.password === formData.confirmPassword ? (
-                <div className="flex items-center text-success text-sm font-body">
-                  <Icon name="Check" size={16} className="mr-1" />
-                  Passwords match
-                </div>
-              ) : (
-                <div className="flex items-center text-error text-sm font-body">
-                  <Icon name="X" size={16} className="mr-1" />
-                  Passwords don't match
-                </div>
-              )}
-            </div>
-          )}
-          
           {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-error font-body flex items-center">
-              <Icon name="AlertCircle" size={16} className="mr-1" />
-              {errors.confirmPassword}
-            </p>
+            <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>
           )}
         </div>
-      </div>
+
+        {/* Password Requirements */}
+        <div className="text-sm text-text-secondary">
+          <p className="mb-2">Password requirements:</p>
+          <ul className="space-y-1">
+            <li className={`flex items-center ${password && password.length >= 8 ? 'text-green-600' : ''}`}>
+              <span className="mr-2">•</span>
+              At least 8 characters
+            </li>
+            <li className={`flex items-center ${password && /[A-Z]/.test(password) ? 'text-green-600' : ''}`}>
+              <span className="mr-2">•</span>
+              At least one uppercase letter
+            </li>
+            <li className={`flex items-center ${password && /[a-z]/.test(password) ? 'text-green-600' : ''}`}>
+              <span className="mr-2">•</span>
+              At least one lowercase letter
+            </li>
+            <li className={`flex items-center ${password && /\d/.test(password) ? 'text-green-600' : ''}`}>
+              <span className="mr-2">•</span>
+              At least one number
+            </li>
+          </ul>
+        </div>
+
+        {/* Error Message */}
+        {errors.root && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+              <p className="text-sm text-red-700">{errors.root.message}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Processing...
+            </div>
+          ) : (
+            'Continue'
+          )}
+        </button>
+      </form>
     </div>
   );
 };

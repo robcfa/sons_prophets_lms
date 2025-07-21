@@ -1,35 +1,33 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import PropTypes from 'prop-types';
 
-const PrivateRoute = ({ children, redirectTo = '/login' }) => {
+const PrivateRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
-  // Show loading state while checking authentication
+  // Show loading spinner while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="space-y-4 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  // Redirect to login if user is not authenticated
+  // Redirect to login if not authenticated
   if (!user) {
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Render children if user is authenticated
-  return children;
-};
+  // Check if user has required role
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    // Redirect to appropriate dashboard based on user role
+    const defaultRoute = user.role === 'coach' ? '/coach-dashboard' : '/learner-dashboard';
+    return <Navigate to={defaultRoute} replace />;
+  }
 
-PrivateRoute.propTypes = {
-  children: PropTypes.node.isRequired,
-  redirectTo: PropTypes.string,
+  return children;
 };
 
 export default PrivateRoute;
