@@ -12,7 +12,6 @@ const BreadcrumbTrail = () => {
     const routeMap = {
       'learner-dashboard': { label: 'Dashboard', icon: 'LayoutDashboard' },
       'coach-dashboard': { label: 'Coach Dashboard', icon: 'LayoutDashboard' },
-      'admin-dashboard': { label: 'Admin Dashboard', icon: 'LayoutDashboard' },
       'course-catalog': { label: 'Course Catalog', icon: 'Library', parent: 'Learn' },
       'course-player': { label: 'Course Player', icon: 'Play', parent: 'Learn' },
       'bible-study-interface': { label: 'Bible Study', icon: 'Book', parent: 'Learn' },

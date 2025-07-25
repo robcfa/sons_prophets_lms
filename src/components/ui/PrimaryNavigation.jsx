@@ -31,14 +31,14 @@ const PrimaryNavigation = () => {
 
   // Memoize navigation items to prevent recalculation on every render
   const navigationItems = useMemo(() => {
-    const baseItems = [
-      {
-        id: 'dashboard',
-        label: 'Dashboard',
-        icon: 'LayoutDashboard',
-        path: `/${userRole}-dashboard`,
-        roles: ['learner', 'coach', 'admin']
-      },
+      const baseItems = [
+        {
+          id: 'dashboard',
+          label: 'Dashboard',
+          icon: 'LayoutDashboard',
+          path: userRole === 'admin' ? '/admin-content-management' : `/${userRole}-dashboard`,
+          roles: ['learner', 'coach', 'admin']
+        },
       {
         id: 'learn',
         label: 'Learn',
