@@ -4,7 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { query, transaction } from './database';
 import { sendVerificationEmail, sendPasswordResetEmail } from './emailService';
 
-const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+// CRITICAL: JWT_SECRET must be set in environment variables for production
+const JWT_SECRET = import.meta.env.VITE_JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('CRITICAL SECURITY WARNING: VITE_JWT_SECRET is not set in environment variables!');
+  console.error('Authentication will NOT work. Please set VITE_JWT_SECRET in your .env file.');
+}
+
 const JWT_EXPIRES_IN = '7d';
 const RESET_TOKEN_EXPIRES_HOURS = 24;
 

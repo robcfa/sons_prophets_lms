@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import Icon from '../../../components/AppIcon';
+import { AlertCircle } from 'lucide-react';
 
-const RoleSelectionStep = ({ formData, onFormChange, errors }) => {
+const RoleSelectionStep = ({ onNext, onBack, initialData }) => {
+  const [selectedRole, setSelectedRole] = useState(initialData?.role || null);
+  const [error, setError] = useState('');
+
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm({
+    defaultValues: initialData || {}
+  });
+
+  const onSubmit = async () => {
+    if (!selectedRole) {
+      setError('Please select a role to continue');
+      return;
+    }
+
+    setError('');
+    onNext({ role: selectedRole });
+  };
   const roles = [
     {
-      id: 'learner',
+      id: 'member',
       name: 'Learner',
       icon: 'BookOpen',
       title: 'Student & Seeker',
@@ -75,7 +96,7 @@ const RoleSelectionStep = ({ formData, onFormChange, errors }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-heading font-bold text-text-primary mb-2">
           Choose Your Role
@@ -87,13 +108,16 @@ const RoleSelectionStep = ({ formData, onFormChange, errors }) => {
 
       <div className="space-y-4">
         {roles.map((role) => {
-          const isSelected = formData.role === role.id;
+          const isSelected = selectedRole === role.id;
           const colors = getColorClasses(role.color, isSelected);
-          
+
           return (
             <div
               key={role.id}
-              onClick={() => onFormChange('role', role.id)}
+              onClick={() => {
+                setSelectedRole(role.id);
+                setError('');
+              }}
               className={`
                 relative p-6 rounded-lg border-2 cursor-pointer transition-all duration-200 hover-lift
                 ${colors.border} ${colors.bg}
@@ -153,13 +177,32 @@ const RoleSelectionStep = ({ formData, onFormChange, errors }) => {
         })}
       </div>
 
-      {errors.role && (
-        <p className="text-sm text-error font-body flex items-center justify-center">
-          <Icon name="AlertCircle" size={16} className="mr-1" />
-          {errors.role}
-        </p>
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        </div>
       )}
-    </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isSubmitting ? (
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            Processing...
+          </div>
+        ) : (
+          'Continue'
+        )}
+      </button>
+    </form>
   );
 };
 

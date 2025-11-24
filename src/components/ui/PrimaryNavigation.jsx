@@ -10,7 +10,7 @@ const PrimaryNavigation = () => {
 
   // Memoize user role to prevent unnecessary re-renders
   const userRole = useMemo(() => {
-    return user?.role || userProfile?.role || localStorage.getItem('userRole') || 'learner';
+    return user?.role || userProfile?.role || localStorage.getItem('userRole') || 'member';
   }, [user?.role, userProfile?.role]);
 
   useEffect(() => {
@@ -36,15 +36,15 @@ const PrimaryNavigation = () => {
         id: 'dashboard',
         label: 'Dashboard',
         icon: 'LayoutDashboard',
-        path: `/${userRole}-dashboard`,
-        roles: ['learner', 'coach', 'admin']
+        path: userRole === 'member' ? '/learner-dashboard' : `/${userRole}-dashboard`,
+        roles: ['member', 'coach', 'admin']
       },
       {
         id: 'learn',
         label: 'Learn',
         icon: 'BookOpen',
         path: '/course-catalog',
-        roles: ['learner', 'coach', 'admin'],
+        roles: ['member', 'coach', 'admin'],
         subItems: [
           { label: 'Course Catalog', path: '/course-catalog', icon: 'Library' },
           { label: 'My Courses', path: '/course-player', icon: 'Play' },
@@ -56,7 +56,7 @@ const PrimaryNavigation = () => {
         label: 'Community',
         icon: 'Users',
         path: '/community-forum',
-        roles: ['learner', 'coach', 'admin'],
+        roles: ['member', 'coach', 'admin'],
         subItems: [
           { label: 'Discussion Forum', path: '/community-forum', icon: 'MessageSquare' },
           { label: 'Events Calendar', path: '/events-calendar', icon: 'Calendar' }
@@ -78,7 +78,7 @@ const PrimaryNavigation = () => {
   }, [userRole]);
 
   // Don't render if no user authentication
-  if (!user && !userProfile && !localStorage.getItem('isAuthenticated')) {
+  if (!user && !userProfile && !localStorage.getItem('authToken')) {
     return null;
   }
 
@@ -145,7 +145,7 @@ const PrimaryNavigation = () => {
                 Continue Learning
               </Link>
               
-              {userRole === 'learner' && (
+              {userRole === 'member' && (
                 <div className="flex items-center px-3 py-2 bg-accent-50 rounded-lg">
                   <Icon name="Zap" size={16} className="text-accent mr-2" />
                   <span className="text-sm font-data text-accent-700">1,250 XP</span>

@@ -9,14 +9,14 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already authenticated
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    // Check if user is already authenticated via auth token
+    const authToken = localStorage.getItem('authToken');
     const userRole = localStorage.getItem('userRole');
 
-    if (isAuthenticated === 'true' && userRole) {
+    if (authToken && userRole) {
       // Redirect to appropriate dashboard based on role
       switch (userRole) {
-        case 'learner': navigate('/learner-dashboard');
+        case 'member': navigate('/learner-dashboard');
           break;
         case 'coach': navigate('/coach-dashboard');
           break;

@@ -1,8 +1,9 @@
 import { Pool } from 'pg';
 
 // Neon Database Connection Configuration
+// IMPORTANT: Use environment variable for database URL to avoid exposing credentials
 const pool = new Pool({
-  connectionString: 'postgresql://neondb_owner:npg_8THW7MRAoXqz@ep-empty-mountain-aeytqax5-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require',
+  connectionString: import.meta.env.VITE_DATABASE_URL || process.env.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false
   },
